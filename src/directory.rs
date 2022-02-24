@@ -18,16 +18,12 @@ impl Directory {
       .unwrap_or(env::current_dir()?)
       .validate()?;
 
-    // If the provided path is a file, our
-    // 'directory' contains this single file.
     if path.is_file() {
-      return Ok(vec![File::new(path.clone())?]);
+      return Ok(vec![File::new(path)?]);
     }
 
     let mut walker = WalkDir::new(&path);
 
-    // If we aren't recursing on a directory,
-    // set the walkers max depth to one.
     if !self.options.recursive {
       walker = walker.max_depth(1);
     }

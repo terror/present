@@ -1,7 +1,21 @@
 use super::*;
 
+#[derive(Debug, Clone)]
 pub(crate) struct Parser<'a> {
   src: &'a str,
+}
+
+#[derive(Debug, Clone)]
+pub(crate) struct Chunk {
+  pub(crate) src: String,
+  pub(crate) start: Position,
+  pub(crate) end: Position,
+}
+
+impl Chunk {
+  fn new(src: String, start: Position, end: Position) -> Self {
+    Self { src, start, end }
+  }
 }
 
 impl<'a> Parser<'a> {
@@ -9,36 +23,35 @@ impl<'a> Parser<'a> {
     Self { src }
   }
 
-  pub(crate) fn extract_commands(&self) -> Result<Vec<Command>> {
+  pub(crate) fn commands(&self) -> Result<Vec<Command>> {
     let parser = MarkdownParser::new(self.src);
 
-    let mut start = 0;
-    let mut current_command = None;
     let mut commands = Vec::new();
 
     for event in parser.into_offset_iter() {
       match event {
         (Event::Start(Tag::CodeBlock(CodeBlockKind::Fenced(_))), range) => {
-          if let Some(command) =
-            Command::parse(&self.src[range.start..range.end])
-          {
-            start = range.start;
-            current_command = Some(command);
-          }
+          commands.push(Position::from(range));
         }
         (Event::End(Tag::CodeBlock(CodeBlockKind::Fenced(_))), range) => {
-          if let Some(command) = &current_command {
-            commands.push(
-              command
-                .clone()
-                .set_position(Position::new(start, range.end)),
-            );
-          }
+          commands.push(Position::from(range));
         }
         _ => {}
       }
     }
 
-    Ok(commands)
+    Ok(
+      commands
+        .chunks_exact(2)
+        .map(|chunk| {
+          Chunk::new(self.src.to_owned(), chunk[0].clone(), chunk[1].clone())
+        })
+        .collect::<Vec<Chunk>>()
+        .iter()
+        .map(Command::from)
+        .filter(|command| command.is_some())
+        .flatten()
+        .collect::<Vec<Command>>(),
+    )
   }
 }

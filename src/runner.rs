@@ -12,13 +12,10 @@ impl Runner {
   }
 
   pub(crate) fn run(&mut self) -> Result {
-    let mut files = self.files.clone();
-
-    files
+    self
+      .files
+      .clone()
       .iter_mut()
-      .map(|file| file.apply_edit())
-      .collect::<Result<Vec<_>, _>>()?;
-
-    Ok(())
+      .try_for_each(|file| file.present(self.options.clone()))
   }
 }

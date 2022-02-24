@@ -1,8 +1,15 @@
 use {
   crate::{
-    arguments::Arguments, command::Command, directory::Directory,
-    directory_options::DirectoryOptions, error::Error, file::File,
-    parser::Parser, path_ext::PathExt, position::Position, runner::Runner,
+    arguments::Arguments,
+    command::Command,
+    directory::Directory,
+    directory_options::DirectoryOptions,
+    error::Error,
+    file::{Diff, File},
+    parser::{Chunk, Parser},
+    path_ext::PathExt,
+    position::Position,
+    runner::Runner,
     runner_options::RunnerOptions,
   },
   clap::Parser as StructOpt,

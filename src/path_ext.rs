@@ -1,6 +1,6 @@
 use super::*;
 
-const MARKDOWN: &'static str = "md";
+const MARKDOWN: &str = "md";
 
 pub(crate) trait PathExt {
   fn is_markdown(&self) -> bool;

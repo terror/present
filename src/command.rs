@@ -6,50 +6,17 @@ const PREFIX: &str = "present";
 pub(crate) struct Command {
   top_level: String,
   arguments: Vec<String>,
-  pub(crate) position: Position,
+  position: Position,
 }
 
 impl Command {
-  fn new() -> Self {
-    Self {
-      top_level: String::new(),
-      arguments: Vec::new(),
-      position: Position::default(),
-    }
-  }
-
-  pub(crate) fn set_top_level(self, top_level: &str) -> Self {
-    Self {
-      top_level: top_level.to_owned(),
-      ..self
-    }
-  }
-
-  pub(crate) fn set_arguments(self, arguments: Vec<&str>) -> Self {
-    Self {
-      arguments: arguments
-        .iter()
-        .map(|s| s.to_string())
-        .collect::<Vec<String>>(),
-      ..self
-    }
-  }
-
-  pub(crate) fn set_position(self, position: Position) -> Self {
-    Self { position, ..self }
-  }
-
-  pub(crate) fn parse(source: &str) -> Option<Self> {
-    let command = Command::new();
-
-    let source = source
-      .trim_start_matches('`')
-      .trim_end_matches('`')
-      .trim_end_matches('\n')
+  pub(crate) fn from(chunk: &Chunk) -> Option<Self> {
+    let source = &chunk.src[chunk.start.start..chunk.start.end]
+      .trim_start_matches(|c| c == '\n' || c == '`' || c == ' ')
+      .trim_end_matches(|c| c == '\n' || c == '`' || c == ' ')
       .split(':')
       .collect::<Vec<&str>>();
 
-    // Commands must start with the prefix `present`.
     if let Some(first) = source.get(0) {
       if *first != PREFIX {
         return None;
@@ -57,21 +24,26 @@ impl Command {
     }
 
     if let Some(source) = source.get(1) {
-      let source = source.split(' ').collect::<Vec<&str>>();
+      let source = source
+        .split(' ')
+        .collect::<Vec<&str>>()
+        .iter()
+        .map(|s| s.to_string())
+        .collect::<Vec<String>>();
 
       let (top_level, arguments) = source.split_at(1);
 
-      return Some(
-        command
-          .set_top_level(top_level[0])
-          .set_arguments(arguments.to_owned()),
-      );
+      return Some(Command {
+        top_level: top_level.first().unwrap().to_string(),
+        arguments: arguments.to_owned(),
+        position: Position::new(chunk.start.start, chunk.end.end),
+      });
     }
 
     None
   }
 
-  pub(crate) fn execute(&self) -> Result<String> {
+  pub(crate) fn execute(&self) -> Result<Diff> {
     let output = std::process::Command::new(self.top_level.clone())
       .args(self.arguments.clone())
       .output()?;
@@ -82,6 +54,9 @@ impl Command {
 
     let stdout = std::str::from_utf8(&output.stdout).unwrap();
 
-    Ok(stdout.to_string())
+    Ok(Diff {
+      content: stdout.to_string(),
+      position: self.position.clone(),
+    })
   }
 }

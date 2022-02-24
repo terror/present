@@ -1,6 +1,12 @@
 use super::*;
 
 #[derive(Debug, Clone)]
+pub(crate) struct Diff {
+  pub(crate) content: String,
+  pub(crate) position: Position,
+}
+
+#[derive(Debug, Clone)]
 pub(crate) struct File {
   path: PathBuf,
   content: Rope,
@@ -16,23 +22,30 @@ impl File {
     Ok(Self {
       path,
       content: Rope::from_str(&content.clone()),
-      commands: parser.extract_commands()?,
+      commands: parser.commands()?,
     })
   }
 
-  pub(crate) fn apply_edit(&mut self) -> Result {
-    for command in self.commands.clone() {
-      let result = command.execute()?;
+  pub(crate) fn present(&mut self, options: RunnerOptions) -> Result {
+    self
+      .commands
+      .clone()
+      .iter()
+      .map(|command| command.execute())
+      .collect::<Result<Vec<_>, _>>()?
+      .iter()
+      .for_each(|diff| self.apply_diff(diff.clone()));
 
-      self
-        .content
-        .remove(command.position.start..command.position.end);
-
-      self.content.insert(command.position.start, &result);
+    match options.in_place {
+      true => fs::write(self.path.clone(), self.content.to_string())?,
+      _ => println!("{}", self.content),
     }
 
-    fs::write(self.path.clone(), self.content.to_string())?;
-
     Ok(())
+  }
+
+  fn apply_diff(&mut self, diff: Diff) {
+    self.content.remove(diff.position.start..diff.position.end);
+    self.content.insert(diff.position.start, &diff.content);
   }
 }

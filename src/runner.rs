@@ -6,6 +6,16 @@ pub(crate) struct Runner {
   options: RunnerOptions,
 }
 
+#[derive(Debug, Clone, StructOpt)]
+pub(crate) struct RunnerOptions {
+  #[clap(long, help = "Modify documents in place.")]
+  pub(crate) in_place: bool,
+  #[clap(long, help = "Interactively present markdown documents.")]
+  pub(crate) interactive: bool,
+  #[clap(long, help = "Remove commands within markdown documents.")]
+  pub(crate) remove: bool,
+}
+
 impl Runner {
   pub(crate) fn new(files: Vec<File>, options: RunnerOptions) -> Self {
     Self { files, options }

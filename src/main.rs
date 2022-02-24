@@ -2,15 +2,13 @@ use {
   crate::{
     arguments::Arguments,
     command::Command,
-    directory::Directory,
-    directory_options::DirectoryOptions,
+    directory::{Directory, DirectoryOptions},
     error::Error,
     file::{Diff, File},
     parser::{Chunk, Parser},
     path_ext::PathExt,
     position::Position,
-    runner::Runner,
-    runner_options::RunnerOptions,
+    runner::{Runner, RunnerOptions},
   },
   clap::Parser as StructOpt,
   pulldown_cmark::{CodeBlockKind, Event, Parser as MarkdownParser, Tag},
@@ -30,14 +28,12 @@ use {
 mod arguments;
 mod command;
 mod directory;
-mod directory_options;
 mod error;
 mod file;
 mod parser;
 mod path_ext;
 mod position;
 mod runner;
-mod runner_options;
 
 type Result<T = (), E = Error> = std::result::Result<T, E>;
 

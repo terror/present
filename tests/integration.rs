@@ -405,3 +405,28 @@ fn remove_multiple_commands_with_exterior_content() -> Result {
     )
     .run()
 }
+
+#[test]
+// TODO: Should this preserve content?
+fn codeblock_with_content() -> Result {
+  Test::new()?
+    .markdown(
+      "
+      ```present echo foo
+
+      bar
+      baz
+
+      ```
+      ",
+    )
+    .expected_status(0)
+    .expected_stdout(
+      "
+      ```present echo foo
+      foo
+      ```
+      ",
+    )
+    .run()
+}

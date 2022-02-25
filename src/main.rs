@@ -1,11 +1,13 @@
 use {
   crate::{
     arguments::Arguments,
+    chunk::Chunk,
     command::Command,
+    diff::Diff,
     directory::{Directory, DirectoryOptions},
     error::Error,
-    file::{Diff, File},
-    parser::{Chunk, Parser},
+    file::File,
+    parser::Parser,
     path_ext::PathExt,
     position::Position,
     runner::{Runner, RunnerOptions},
@@ -20,13 +22,16 @@ use {
     fs, io,
     ops::Range,
     path::PathBuf,
-    process,
+    process, str,
   },
+  termimad::print_inline,
   walkdir::WalkDir,
 };
 
 mod arguments;
+mod chunk;
 mod command;
+mod diff;
 mod directory;
 mod error;
 mod file;

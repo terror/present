@@ -9,6 +9,7 @@ edition = "2021"
 pulldown-cmark = "0.9.1"
 ropey = "1.3.2"
 snafu = "0.7.0"
+termimad = "0.20.0"
 walkdir = "2.3.2"
 
 [dependencies.clap]

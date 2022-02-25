@@ -1,15 +1,17 @@
-## present
+### present
 
 **present** is a tool that lets you interpolate arbitrary scripts that get
 interpreted by the shell into your markdown documents.
 
-For example, here is a file called `foo.md`. You can place commands within
+### Example
+
+Below is the contents of a file called `foo.md`. You can place commands within
 a fenced code block:
 
 ````
-foo!
+foo
 
-```present:'cargo run -- --help'
+```present echo bar
 
 ```
 ````
@@ -23,9 +25,16 @@ $ present --in-place --path foo.md
 and the document gets modified in-place:
 
 ````
-foo!
+foo
 
-```present:'cargo run -- --help'
+```present echo bar
+bar
+```
+````
+
+### Usage
+
+```present cargo run -- --help
 present 0.0.0
 A tool that lets you interpolate arbitrary scripts into your markdown documents.
 
@@ -41,4 +50,3 @@ OPTIONS:
         --remove         Remove commands within markdown documents.
     -V, --version        Print version information
 ```
-````

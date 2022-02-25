@@ -1,7 +1,7 @@
 default:
   just --list
 
-all: build clippy fmt-check forbid test
+all: build clippy fmt-check forbid readme test
 
 alias f := fmt
 alias r := run
@@ -11,9 +11,6 @@ build:
 
 check:
  cargo check
-
-test:
-	cargo test
 
 clippy:
   cargo clippy --all-targets --all-features
@@ -30,6 +27,12 @@ forbid:
 
 run *args:
 	cargo run -- --{{args}}
+
+readme:
+	cargo run -- --in-place --path README.md
+
+test:
+	cargo test
 
 usage:
 	cargo run -- --help | pbcopy

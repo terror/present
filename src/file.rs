@@ -1,12 +1,6 @@
 use super::*;
 
 #[derive(Debug, Clone)]
-pub(crate) struct Diff {
-  pub(crate) content: String,
-  pub(crate) position: Position,
-}
-
-#[derive(Debug, Clone)]
 pub(crate) struct File {
   path: PathBuf,
   content: Rope,
@@ -31,14 +25,14 @@ impl File {
       .commands
       .clone()
       .iter()
-      .map(|command| command.execute())
+      .map(|command| command.execute(options.remove))
       .collect::<Result<Vec<_>, _>>()?
       .iter()
       .for_each(|diff| self.apply_diff(diff.clone()));
 
     match options.in_place {
       true => fs::write(self.path.clone(), self.content.to_string())?,
-      _ => println!("{}", self.content),
+      _ => print_inline(&self.content.to_string()),
     }
 
     Ok(())

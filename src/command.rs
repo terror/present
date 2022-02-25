@@ -55,7 +55,7 @@ impl Command {
 
     let range = match remove {
       // Replace the entire codeblock with `stdout`
-      true => self.codeblock.start.start..self.codeblock.end.end,
+      true => self.codeblock.start.start..self.codeblock.end.end + 2,
       // Insert in between the codeblock (start, end)
       _ => self.codeblock.start.end + 1..self.codeblock.end.start + 1,
     };

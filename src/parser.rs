@@ -13,26 +13,16 @@ impl<'a> Parser<'a> {
   pub(crate) fn commands(&self) -> Result<Vec<Command>> {
     let parser = MarkdownParser::new(self.src);
 
-    let mut commands = Vec::new();
-
-    for event in parser.into_offset_iter() {
-      match event {
-        (Event::Start(Tag::CodeBlock(CodeBlockKind::Fenced(_))), range) => {
-          commands.push(Position::from(range));
-        }
-        _ => {}
-      }
-    }
+    let events = parser.into_offset_iter().filter(|event| {
+      matches!(
+        event,
+        (Event::Start(Tag::CodeBlock(CodeBlockKind::Fenced(_))), _)
+      )
+    });
 
     Ok(
-      commands
-        .iter()
-        .map(|position| Chunk::new(self.src, position.clone()))
-        .collect::<Vec<Chunk>>()
-        .iter()
-        .map(Command::from)
-        .filter(|command| command.is_some())
-        .flatten()
+      events
+        .filter_map(|event| Command::from(Chunk::new(self.src, event.1)))
         .collect::<Vec<Command>>(),
     )
   }

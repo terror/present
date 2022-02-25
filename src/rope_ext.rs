@@ -6,7 +6,7 @@ pub(crate) trait RopeExt {
 
 impl RopeExt for Rope {
   fn apply(&mut self, diff: Diff) {
-    self.remove(diff.position.start..diff.position.end);
-    self.insert(diff.position.start, &diff.content);
+    self.remove(diff.range.clone());
+    self.insert(diff.range.start, &diff.content);
   }
 }

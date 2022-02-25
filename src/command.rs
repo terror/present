@@ -4,76 +4,65 @@ const PREFIX: &str = "present";
 
 #[derive(Debug, Clone)]
 pub(crate) struct Command {
-  top_level: String,
+  program: String,
   arguments: Vec<String>,
-  start: Position,
-  end: Position,
+  codeblock: Codeblock,
 }
 
 impl Command {
-  pub(crate) fn from(chunk: &Chunk) -> Option<Self> {
-    let trim = |c: char| c == '\n' || c == '`' || c == ' ';
+  pub(crate) fn from(chunk: Chunk) -> Option<Self> {
+    let (prefix, command) = chunk.command.split_at(1);
 
-    let source = &chunk.src[chunk.start.start..chunk.start.end]
-      .trim_start_matches(trim)
-      .trim_end_matches(trim)
-      .split(' ')
-      .collect::<Vec<&str>>()
-      .iter()
-      .map(|s| s.to_string())
-      .collect::<Vec<String>>();
-
-    let (first, rest) = source.split_at(1);
-
-    if let Some(first) = first.get(0) {
-      if *first != PREFIX {
+    if let Some(prefix) = prefix.get(0) {
+      if *prefix != PREFIX {
         return None;
       }
     }
 
-    if !rest.is_empty() {
-      let source = rest
+    if !command.is_empty() {
+      let command = command
         .join(" ")
         .split(' ')
-        .collect::<Vec<&str>>()
-        .iter()
-        .map(|s| s.to_string())
+        .map(|s| s.into())
         .collect::<Vec<String>>();
 
-      let (top_level, arguments) = source.split_at(1);
+      let (program, arguments) = command.split_at(1);
 
-      return Some(Command {
-        top_level: top_level.first().unwrap().to_string(),
-        arguments: arguments.to_owned(),
-        start: chunk.start.clone(),
-        end: chunk.end.clone(),
-      });
+      if let Some(program) = program.first() {
+        return Some(Command {
+          program: program.to_string(),
+          arguments: arguments.to_owned(),
+          codeblock: chunk.codeblock,
+        });
+      }
     }
 
     None
   }
 
   pub(crate) fn execute(&self, remove: bool) -> Result<Diff> {
-    let output = process::Command::new(self.top_level.clone())
+    let output = process::Command::new(self.program.clone())
       .args(self.arguments.clone())
       .output()?;
 
     if !output.status.success() {
-      return Err(Error::MalformedCommand {
-        position: self.start.clone(),
+      return Err(Error::CommandFailed {
+        range: self.codeblock.start.clone(),
       });
     }
 
     let stdout = str::from_utf8(&output.stdout)?;
 
-    let position = match remove {
-      true => Position::new(self.start.start, self.end.end),
-      _ => Position::new(self.start.end, self.end.start),
+    let range = match remove {
+      // Replace the entire codeblock with `stdout`
+      true => self.codeblock.start.start..self.codeblock.end.end,
+      // Insert in between the codeblock (start, end)
+      _ => self.codeblock.start.end + 1..self.codeblock.end.start + 1,
     };
 
     Ok(Diff {
       content: stdout.to_string(),
-      position,
+      range,
     })
   }
 }

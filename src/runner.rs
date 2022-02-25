@@ -12,6 +12,8 @@ pub(crate) struct RunnerOptions {
   pub(crate) in_place: bool,
   #[clap(long, help = "Interactively present markdown documents.")]
   pub(crate) interactive: bool,
+  #[clap(long, help = "Pretty print documents to the terminal.")]
+  pub(crate) pretty: bool,
   #[clap(long, help = "Remove commands within markdown documents.")]
   pub(crate) remove: bool,
 }

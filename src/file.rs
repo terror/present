@@ -30,13 +30,21 @@ impl File {
       .iter()
       .for_each(|diff| self.content.apply(diff.clone()));
 
-    self.save(options.in_place)
+    Ok(match options.in_place {
+      true => self.save()?,
+      _ => self.print(options.pretty),
+    })
   }
 
-  fn save(&self, in_place: bool) -> Result {
-    Ok(match in_place {
-      true => fs::write(self.path.clone(), self.content.to_string())?,
-      _ => print_inline(&self.content.to_string()),
-    })
+  fn save(&self) -> Result {
+    Ok(fs::write(self.path.clone(), self.content.to_string())?)
+  }
+
+  fn print(&self, pretty: bool) {
+    if pretty {
+      print_inline(&self.content.to_string());
+    } else {
+      print!("{}", self.content);
+    }
   }
 }

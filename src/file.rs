@@ -21,14 +21,28 @@ impl File {
   }
 
   pub(crate) fn present(&mut self, options: RunnerOptions) -> Result {
-    self
+    let diffs = self
       .commands
       .clone()
       .iter()
       .map(|command| command.execute(options.remove))
-      .collect::<Result<Vec<_>, _>>()?
-      .iter()
-      .for_each(|diff| self.content.apply(diff.clone()));
+      .collect::<Result<Vec<_>, _>>()?;
+
+    let mut offset = 0;
+
+    for mut diff in diffs {
+      diff.range.start += offset;
+      diff.range.end += offset;
+
+      let prev = self.content.len_chars();
+
+      self.content.apply(diff.clone());
+
+      // Account for the increase in rope size
+      if self.content.len_chars() > prev {
+        offset += self.content.len_chars() - prev;
+      }
+    }
 
     Ok(match options.in_place {
       true => self.save()?,

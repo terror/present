@@ -25,24 +25,25 @@ OPTIONS:
 
 ### Example
 
-Below is the contents of a file called `foo.md`. You can place commands within
-a fenced code block:
+Below is the contents of a file called `foo.md`. You can place commands at the
+start of a fenced code block:
 
 ````
 foo
 
 ```present echo bar
-
 ```
 ````
 
-which can then get transformed by invoking the `present` binary on `foo.md`:
+These commands can then get interpreted by the shell by invoking the `present`
+binary on `foo.md`:
 
 ```bash
 $ present --in-place --path foo.md
 ```
 
-and the document gets modified in-place:
+The document gets modified in-place, with the commands `stdout` interpolated
+in-between the fenced code block:
 
 ````
 foo

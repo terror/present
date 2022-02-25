@@ -28,18 +28,15 @@ impl File {
       .map(|command| command.execute(options.remove))
       .collect::<Result<Vec<_>, _>>()?
       .iter()
-      .for_each(|diff| self.apply_diff(diff.clone()));
+      .for_each(|diff| self.content.apply(diff.clone()));
 
-    match options.in_place {
-      true => fs::write(self.path.clone(), self.content.to_string())?,
-      _ => print_inline(&self.content.to_string()),
-    }
-
-    Ok(())
+    self.save(options.in_place)
   }
 
-  fn apply_diff(&mut self, diff: Diff) {
-    self.content.remove(diff.position.start..diff.position.end);
-    self.content.insert(diff.position.start, &diff.content);
+  fn save(&self, in_place: bool) -> Result {
+    Ok(match in_place {
+      true => fs::write(self.path.clone(), self.content.to_string())?,
+      _ => print_inline(&self.content.to_string()),
+    })
   }
 }

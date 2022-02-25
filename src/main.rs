@@ -11,6 +11,7 @@ use {
     path_ext::PathExt,
     position::Position,
     runner::{Runner, RunnerOptions},
+    rope_ext::RopeExt
   },
   clap::Parser as StructOpt,
   pulldown_cmark::{CodeBlockKind, Event, Parser as MarkdownParser, Tag},
@@ -39,6 +40,7 @@ mod parser;
 mod path_ext;
 mod position;
 mod runner;
+mod rope_ext;
 
 type Result<T = (), E = Error> = std::result::Result<T, E>;
 

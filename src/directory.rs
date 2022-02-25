@@ -44,6 +44,6 @@ impl Directory {
       .map(|entry| entry.into_path())
       .filter(|entry| entry.is_markdown())
       .map(File::new)
-      .collect::<Result<Vec<_>, _>>()
+      .collect()
   }
 }

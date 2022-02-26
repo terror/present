@@ -22,84 +22,31 @@ impl Diff {
 mod tests {
   use super::*;
 
-  struct Test {
-    content: String,
-    expected_range: Range<usize>,
-    offset: isize,
-    range: Range<usize>,
-  }
-
-  impl Test {
-    fn new() -> Self {
-      Self {
-        content: String::new(),
-        expected_range: Range::default(),
-        offset: 0,
-        range: Range::default(),
-      }
-    }
-
-    fn content(self, content: &str) -> Self {
-      Self {
-        content: content.to_string(),
-        ..self
-      }
-    }
-
-    fn expected_range(self, expected_range: Range<usize>) -> Self {
-      Self {
-        expected_range,
-        ..self
-      }
-    }
-
-    fn offset(self, offset: isize) -> Self {
-      Self { offset, ..self }
-    }
-
-    fn range(self, range: Range<usize>) -> Self {
-      Self { range, ..self }
-    }
-
-    fn run(self) {
-      let mut diff = Diff {
-        content: self.content,
-        range: self.range,
-      };
-
-      diff.offset(self.offset);
-
-      assert_eq!(diff.range, self.expected_range);
+  fn diff() -> Diff {
+    Diff {
+      content: "foobar".into(),
+      range: 1..4,
     }
   }
 
   #[test]
   fn offset_positive() {
-    Test::new()
-      .content("foobar")
-      .range(1..4)
-      .offset(1)
-      .expected_range(2..5)
-      .run();
+    let mut diff = diff();
+    diff.offset(1);
+    assert_eq!(diff.range, 2..5);
   }
 
   #[test]
   fn offset_negative() {
-    Test::new()
-      .content("foobar")
-      .range(1..4)
-      .offset(-1)
-      .expected_range(0..3)
-      .run();
+    let mut diff = diff();
+    diff.offset(-1);
+    assert_eq!(diff.range, 0..3);
   }
 
   #[test]
-  fn offset_negative_below_zero() {
-    Test::new()
-      .content("foobar")
-      .range(0..3)
-      .offset(-1)
-      .expected_range(0..2)
-      .run();
+  fn offset_negative_overflow() {
+    let mut diff = diff();
+    diff.offset(-10);
+    assert_eq!(diff.range, 0..0);
   }
 }

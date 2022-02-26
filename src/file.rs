@@ -28,16 +28,10 @@ impl File {
       .map(|command| command.execute(options.remove))
       .collect::<Result<Vec<_>, _>>()?;
 
-    let mut offset: isize = 0;
+    let mut offset = 0;
 
     for mut diff in diffs {
-      if offset < 0 {
-        diff.range.start -= offset.abs() as usize;
-        diff.range.end -= offset.abs() as usize;
-      } else {
-        diff.range.start += offset as usize;
-        diff.range.end += offset as usize;
-      }
+      diff.offset(offset);
 
       let prev = self.content.len_chars();
 

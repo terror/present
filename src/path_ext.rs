@@ -16,7 +16,7 @@ impl PathExt for PathBuf {
     let path = self.clone();
     match self.exists() {
       true => Ok(path),
-      _ => Err(Error::Path { path }),
+      _ => Err(Error::PathDoesNotExist { path }),
     }
   }
 }

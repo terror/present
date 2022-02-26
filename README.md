@@ -5,6 +5,12 @@
 **present** is a tool that lets you interpolate the standard output of arbitrary
 scripts that get interpreted by the shell into your markdown documents.
 
+### Demo
+
+Below is a short demo showcasing the main functionality of the program.
+
+[![asciicast](https://asciinema.org/a/Mngwm9d3eJcJWtilQrAvjgh2D.svg)](https://asciinema.org/a/Mngwm9d3eJcJWtilQrAvjgh2D)
+
 ### Usage
 
 ```present cargo run -- --help

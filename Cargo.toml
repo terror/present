@@ -1,9 +1,15 @@
 [package]
 name = "present"
-authors = ["Liam <liam@scalzulli.com>"]
+version = "0.1.0"
 description = "Interpolate the standard output of arbitrary shell scripts into your markdown files"
-version = "0.0.0"
+authors = ["Liam <liam@scalzulli.com>"]
+license = "CC0-1.0"
+homepage = "https://github.com/terror/present"
+repository = "https://github.com/terror/present"
 edition = "2021"
+categories = ["command-line-utilities"]
+keywords = ["command-line", "productivity", "utility", "markdown", "bash"]
+resolver = "2"
 
 [dependencies]
 console = "0.15.0"

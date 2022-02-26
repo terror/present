@@ -11,10 +11,21 @@ Below is a short demo showcasing the main functionality of the program.
 
 [![asciicast](https://asciinema.org/a/Mngwm9d3eJcJWtilQrAvjgh2D.svg)](https://asciinema.org/a/Mngwm9d3eJcJWtilQrAvjgh2D)
 
+### Installation
+
+You can install `present` with the rust package manager Cargo:
+
+```bash
+$ cargo install present
+```
+
 ### Usage
 
+Below is the standard output of `present --help`, interpolated by the `present`
+binary itself!
+
 ```present cargo run -- --help
-present 0.0.0
+present 0.1.0
 Interpolate the standard output of arbitrary shell scripts into your markdown files
 
 USAGE:

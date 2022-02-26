@@ -2,7 +2,7 @@
 name = "present"
 authors = ["Liam <liam@scalzulli.com>"]
 description = "Interpolate the standard output of arbitrary shell scripts into your markdown files"
-version = "0.0.0"
+version = "0.1.0"
 edition = "2021"
 
 [dependencies]

@@ -142,21 +142,21 @@ fn simple() -> Result {
     .run()
 }
 
-#[ignore]
 #[test]
-fn without_newline() -> Result {
+fn arbitrary_fence_length() -> Result {
   Test::new()?
     .markdown(
       "
-      ```present echo foo```
+      `````present echo foo
+      `````
       ",
     )
     .expected_status(0)
     .expected_stdout(
       "
-      ```present echo foo
+      `````present echo foo
       foo
-      ```
+      `````
       ",
     )
     .run()
@@ -194,7 +194,7 @@ fn invalid_command() -> Result {
     .expected_status(1)
     .expected_stderr(
       "
-      error: IO Error: No such file or directory (os error 2)
+      error: Command at position: 0..20 failed to run with message: No such file or directory (os error 2)
       ",
     )
     .run()

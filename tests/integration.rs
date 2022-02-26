@@ -127,7 +127,6 @@ fn simple() -> Result {
 
 #[ignore]
 #[test]
-// TODO: get this to work or nah?
 fn without_newline() -> Result {
   Test::new()?
     .markdown(
@@ -176,12 +175,10 @@ fn invalid_command() -> Result {
       ",
     )
     .expected_status(1)
-    // TODO: add better error messages for invalid commands
-    // e.g maybe include the command and position in the file
     .expected_stderr(
       "
       error: IO Error: No such file or directory (os error 2)
-      "
+      ",
     )
     .run()
 }
@@ -407,7 +404,6 @@ fn remove_multiple_commands_with_exterior_content() -> Result {
 }
 
 #[test]
-// TODO: Should this preserve content?
 fn codeblock_with_content() -> Result {
   Test::new()?
     .markdown(

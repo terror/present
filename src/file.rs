@@ -32,7 +32,20 @@ impl File {
 
     for mut diff in diffs {
       diff.offset(offset);
+
       let prev = self.content.len_chars();
+
+      if options.interactive {
+        diff.print(self.content.clone());
+
+        if prompt("Apply changes? [Y/N]")?.as_str() == "y" {
+          self.content.apply(diff.clone());
+          offset += self.content.len_chars() as isize - prev as isize;
+        }
+
+        continue;
+      }
+
       self.content.apply(diff.clone());
       offset += self.content.len_chars() as isize - prev as isize;
     }

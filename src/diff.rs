@@ -16,6 +16,22 @@ impl Diff {
       self.range.end += offset as usize;
     }
   }
+
+  pub(crate) fn print(&self, content: Rope) {
+    for change in TextDiff::from_lines(
+      &content.to_string(),
+      &content.simulate(self.clone()).to_string(),
+    )
+    .iter_all_changes()
+    {
+      let (sign, style) = match change.tag() {
+        ChangeTag::Delete => ("-", Style::new().red()),
+        ChangeTag::Insert => ("+", Style::new().green()),
+        ChangeTag::Equal => ("", Style::new()),
+      };
+      eprint!("{}{}", style.apply_to(sign).bold(), style.apply_to(change));
+    }
+  }
 }
 
 #[cfg(test)]

@@ -11,6 +11,7 @@ mod file;
 mod parser;
 mod path_ext;
 mod position;
+mod prompt;
 mod rope_ext;
 mod runner;
 

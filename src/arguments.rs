@@ -10,10 +10,10 @@ pub(crate) struct Arguments {
 }
 
 impl Arguments {
-  pub(crate) fn run(&self) -> Result {
+  pub(crate) fn run(self) -> Result {
     Runner::new(
-      Directory::new(self.directory_options.clone()).files()?,
-      self.runner_options.clone(),
+      Directory::new(self.directory_options).files()?,
+      self.runner_options,
     )
     .run()
   }

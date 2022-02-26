@@ -25,7 +25,7 @@ Below is the standard output of `present --help`, interpolated by the `present`
 binary itself!
 
 ```present cargo run -- --help
-present 0.1.0
+present 0.1.1
 Interpolate the standard output of arbitrary shell scripts into your markdown files
 
 USAGE:

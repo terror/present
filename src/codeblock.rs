@@ -1,4 +1,4 @@
-use super::*;
+use crate::common::*;
 
 #[derive(Debug, Default, Clone, PartialEq)]
 pub(crate) struct Codeblock {

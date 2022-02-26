@@ -1,4 +1,4 @@
-use super::*;
+use crate::common::*;
 
 pub(crate) trait RopeExt {
   fn apply(&mut self, diff: Diff);

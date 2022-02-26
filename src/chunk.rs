@@ -1,4 +1,4 @@
-use super::*;
+use crate::common::*;
 
 #[derive(Debug, Clone, PartialEq)]
 pub(crate) struct Chunk {

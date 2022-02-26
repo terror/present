@@ -1,11 +1,19 @@
 // std
-pub(crate) use std::{env, fs, io, ops::Range, path::PathBuf, process, str};
+pub(crate) use std::{
+  env, fs,
+  io::{self, Write},
+  ops::Range,
+  path::PathBuf,
+  process, str,
+};
 
 // dependencies
 pub(crate) use {
   clap::Parser as StructOpt,
+  console::Style,
   pulldown_cmark::{CodeBlockKind, Event, Parser as MarkdownParser, Tag},
   ropey::Rope,
+  similar::{ChangeTag, TextDiff},
   snafu::Snafu,
   termimad::print_inline,
   walkdir::WalkDir,
@@ -24,6 +32,9 @@ pub(crate) use crate::{
   position::Position,
   runner::{Runner, RunnerOptions},
 };
+
+// functions
+pub(crate) use crate::prompt::prompt;
 
 // traits
 pub(crate) use crate::{path_ext::PathExt, rope_ext::RopeExt};

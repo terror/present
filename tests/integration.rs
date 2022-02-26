@@ -1,7 +1,12 @@
 use {
   executable_path::executable_path,
   pretty_assertions::assert_eq,
-  std::{fs, process::Command, str},
+  std::{
+    fs,
+    io::Write,
+    process::{Command, Stdio},
+    str,
+  },
   tempdir::TempDir,
   unindent::Unindent,
 };
@@ -13,7 +18,7 @@ struct Test {
   expected_status: i32,
   expected_stderr: String,
   expected_stdout: String,
-  markdown: String,
+  markdown: Vec<String>,
   tempdir: TempDir,
 }
 
@@ -22,30 +27,21 @@ impl Test {
     Ok(Self {
       arguments: Vec::new(),
       expected_status: 0,
-      markdown: String::new(),
       expected_stderr: String::new(),
       expected_stdout: String::new(),
+      markdown: Vec::new(),
       tempdir: TempDir::new("test")?,
     })
+  }
+
+  fn argument(mut self, argument: &str) -> Self {
+    self.arguments.push(argument.to_owned());
+    self
   }
 
   fn expected_status(self, expected_status: i32) -> Self {
     Self {
       expected_status,
-      ..self
-    }
-  }
-
-  fn markdown(self, markdown: &str) -> Self {
-    Self {
-      markdown: markdown.unindent(),
-      ..self
-    }
-  }
-
-  fn expected_stdout(self, expected_stdout: &str) -> Self {
-    Self {
-      expected_stdout: expected_stdout.unindent(),
       ..self
     }
   }
@@ -57,8 +53,15 @@ impl Test {
     }
   }
 
-  fn argument(mut self, argument: &str) -> Self {
-    self.arguments.push(argument.to_owned());
+  fn expected_stdout(self, expected_stdout: &str) -> Self {
+    Self {
+      expected_stdout: expected_stdout.unindent(),
+      ..self
+    }
+  }
+
+  fn markdown(mut self, markdown: &str) -> Self {
+    self.markdown.push(markdown.unindent());
     self
   }
 
@@ -69,15 +72,29 @@ impl Test {
   fn command(&self) -> Result<Command> {
     let mut command = Command::new(executable_path(env!("CARGO_PKG_NAME")));
 
-    fs::write(self.tempdir.path().join("foo.md"), self.markdown.clone())?;
+    self
+      .markdown
+      .iter()
+      .enumerate()
+      .try_for_each(|(index, markdown)| {
+        fs::write(
+          self.tempdir.path().join(format!("test-{}.md", index)),
+          markdown,
+        )
+      })?;
 
     command
       .current_dir(&self.tempdir)
       .arg("--path")
-      .arg(self.tempdir.path().join("foo.md"))
+      .arg(self.tempdir.path())
       .args(self.arguments.clone());
 
     Ok(command)
+  }
+
+  fn tempdir(self) -> Result<TempDir> {
+    self.command()?.output()?;
+    Ok(self.tempdir)
   }
 
   fn run_and_return_tempdir(self) -> Result<TempDir> {
@@ -88,7 +105,7 @@ impl Test {
     assert_eq!(
       output.status.code(),
       Some(self.expected_status),
-      "\n\nMarkdown:\n\n{}\nfailed: {}",
+      "\n\nMarkdown:\n\n{:?}\nfailed: {}",
       self.markdown,
       stderr
     );
@@ -425,4 +442,79 @@ fn codeblock_with_content() -> Result {
       ",
     )
     .run()
+}
+
+#[test]
+fn multiple_markdown_files() -> Result {
+  Test::new()?
+    .markdown(
+      "
+      ```present echo foo
+      ```
+      ",
+    )
+    .markdown(
+      "
+      ```present echo foo
+      ```
+      ",
+    )
+    .expected_status(0)
+    .expected_stdout(
+      "
+      ```present echo foo
+      foo
+      ```
+      ```present echo foo
+      foo
+      ```
+      ",
+    )
+    .run()
+}
+
+#[test]
+fn interactive_accept() -> Result {
+  let tempdir = Test::new()?
+    .markdown("```present echo foo\n```")
+    .tempdir()?;
+
+  let mut command = Command::new(executable_path(env!("CARGO_PKG_NAME")))
+    .args(["--path", tempdir.path().to_str().unwrap(), "--interactive"])
+    .stdin(Stdio::piped())
+    .stdout(Stdio::piped())
+    .stderr(Stdio::piped())
+    .spawn()?;
+
+  write!(command.stdin.as_mut().unwrap(), "y")?;
+
+  assert_eq!(
+    str::from_utf8(&command.wait_with_output()?.stdout)?,
+    "```present echo foo\nfoo\n```"
+  );
+
+  Ok(())
+}
+
+#[test]
+fn interactive_reject() -> Result {
+  let tempdir = Test::new()?
+    .markdown("```present echo foo\n```")
+    .tempdir()?;
+
+  let mut command = Command::new(executable_path(env!("CARGO_PKG_NAME")))
+    .args(["--path", tempdir.path().to_str().unwrap(), "--interactive"])
+    .stdin(Stdio::piped())
+    .stdout(Stdio::piped())
+    .stderr(Stdio::piped())
+    .spawn()?;
+
+  write!(command.stdin.as_mut().unwrap(), "n")?;
+
+  assert_eq!(
+    str::from_utf8(&command.wait_with_output()?.stdout)?,
+    "```present echo foo\n```"
+  );
+
+  Ok(())
 }

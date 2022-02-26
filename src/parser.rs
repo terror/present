@@ -10,19 +10,17 @@ impl<'a> Parser<'a> {
     Self { src }
   }
 
-  pub(crate) fn commands(&self) -> Result<Vec<Command>> {
-    let parser = MarkdownParser::new(self.src);
-
-    let events = parser.into_offset_iter().filter(|event| {
-      matches!(
-        event,
-        (Event::Start(Tag::CodeBlock(CodeBlockKind::Fenced(_))), _)
-      )
-    });
-
+  pub(crate) fn parse(&self) -> Result<Vec<Command>> {
     Ok(
-      events
-        .filter_map(|event| Command::from(Chunk::new(self.src, event.1)))
+      MarkdownParser::new(self.src)
+        .into_offset_iter()
+        .filter(|event| {
+          matches!(
+            event,
+            (Event::Start(Tag::CodeBlock(CodeBlockKind::Fenced(_))), _)
+          )
+        })
+        .filter_map(|event| Command::from(Codeblock::new(self.src, event.1)))
         .collect::<Vec<Command>>(),
     )
   }

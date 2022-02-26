@@ -1,7 +1,6 @@
 use crate::common::*;
 
 mod arguments;
-mod chunk;
 mod codeblock;
 mod command;
 mod common;
@@ -11,6 +10,7 @@ mod error;
 mod file;
 mod parser;
 mod path_ext;
+mod position;
 mod rope_ext;
 mod runner;
 

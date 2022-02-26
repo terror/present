@@ -14,7 +14,6 @@ pub(crate) use {
 // structs and enums
 pub(crate) use crate::{
   arguments::Arguments,
-  chunk::Chunk,
   codeblock::Codeblock,
   command::Command,
   diff::Diff,
@@ -22,6 +21,7 @@ pub(crate) use crate::{
   error::Error,
   file::File,
   parser::Parser,
+  position::Position,
   runner::{Runner, RunnerOptions},
 };
 

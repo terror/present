@@ -16,7 +16,7 @@ impl File {
     Ok(Self {
       path,
       content: Rope::from_str(&content.clone()),
-      commands: parser.commands()?,
+      commands: parser.parse()?,
     })
   }
 

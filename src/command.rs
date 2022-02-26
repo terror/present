@@ -6,12 +6,12 @@ const PREFIX: &str = "present";
 pub(crate) struct Command {
   program: String,
   arguments: Vec<String>,
-  codeblock: Codeblock,
+  position: Position,
 }
 
 impl Command {
-  pub(crate) fn from(chunk: Chunk) -> Option<Self> {
-    let (prefix, command) = chunk.command.split_at(1);
+  pub(crate) fn from(codeblock: Codeblock) -> Option<Self> {
+    let (prefix, command) = codeblock.command.split_at(1);
 
     if let Some(prefix) = prefix.get(0) {
       if *prefix != PREFIX {
@@ -19,25 +19,26 @@ impl Command {
       }
     }
 
-    if !command.is_empty() {
-      let command = command
-        .join(" ")
-        .split(' ')
-        .map(|s| s.into())
-        .collect::<Vec<String>>();
-
-      let (program, arguments) = command.split_at(1);
-
-      if let Some(program) = program.first() {
-        return Some(Command {
-          program: program.to_string(),
-          arguments: arguments.to_owned(),
-          codeblock: chunk.codeblock,
-        });
-      }
+    if command.is_empty() {
+      return None;
     }
 
-    None
+    let command = command
+      .join(" ")
+      .split(' ')
+      .map(|s| s.into())
+      .collect::<Vec<String>>();
+
+    let (program, arguments) = command.split_at(1);
+
+    match program.first() {
+      Some(program) => Some(Command {
+        program: program.to_string(),
+        arguments: arguments.to_owned(),
+        position: codeblock.position,
+      }),
+      None => None,
+    }
   }
 
   pub(crate) fn execute(&self, remove: bool) -> Result<Diff> {
@@ -47,22 +48,18 @@ impl Command {
 
     if !output.status.success() {
       return Err(Error::CommandFailed {
-        range: self.codeblock.start.clone(),
+        range: self.position.start.clone(),
       });
     }
 
-    let stdout = str::from_utf8(&output.stdout)?;
-
-    let range = match remove {
-      // Replace the entire codeblock with `stdout`
-      true => self.codeblock.start.start..self.codeblock.end.end + 2,
-      // Insert in between the codeblock (start, end)
-      _ => self.codeblock.start.end + 1..self.codeblock.end.start + 1,
-    };
-
     Ok(Diff {
-      content: stdout.to_string(),
-      range,
+      content: str::from_utf8(&output.stdout)?.to_string(),
+      range: match remove {
+        // Replace the entire codeblock with `stdout`
+        true => self.position.start.start..self.position.end.end + 2,
+        // Insert in between the codeblock (start, end)
+        _ => self.position.start.end + 1..self.position.end.start + 1,
+      },
     })
   }
 }

@@ -16,7 +16,7 @@ pub enum Error {
   #[snafu(context(false), display("IO Error: {}", source))]
   Io { source: io::Error },
 
-  #[snafu(display("{}", path.display()))]
+  #[snafu(display("Path does not exist: {}", path.display()))]
   PathDoesNotExist { path: PathBuf },
 
   #[snafu(context(false), display("Utf8 Error: {}", source))]

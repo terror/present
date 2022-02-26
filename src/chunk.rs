@@ -7,7 +7,7 @@ pub(crate) struct Chunk {
 }
 
 impl Chunk {
-  pub(crate) fn new<'a>(src: &'a str, range: Range<usize>) -> Self {
+  pub(crate) fn new(src: &'_ str, range: Range<usize>) -> Self {
     let start_start = range.start;
     let mut start_end = start_start;
 

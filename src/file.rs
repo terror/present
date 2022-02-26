@@ -32,23 +32,17 @@ impl File {
 
     for mut diff in diffs {
       diff.offset(offset);
-
       let prev = self.content.len_chars();
-
       self.content.apply(diff.clone());
-
-      // Account for the increase/decrease in rope size
-      if self.content.len_chars() > prev {
-        offset += (self.content.len_chars() - prev) as isize;
-      } else {
-        offset -= (prev - self.content.len_chars()) as isize;
-      }
+      offset += self.content.len_chars() as isize - prev as isize;
     }
 
-    Ok(match options.in_place {
+    match options.in_place {
       true => self.save()?,
       _ => self.print(options.pretty),
-    })
+    }
+
+    Ok(())
   }
 
   fn save(&self) -> Result {
@@ -56,10 +50,9 @@ impl File {
   }
 
   fn print(&self, pretty: bool) {
-    if pretty {
-      print_inline(&self.content.to_string());
-    } else {
-      print!("{}", self.content);
+    match pretty {
+      true => print_inline(&self.content.to_string()),
+      _ => print!("{}", self.content),
     }
   }
 }

@@ -1,7 +1,7 @@
 default:
   just --list
 
-all: build clippy fmt-check forbid readme test
+all: build test clippy fmt-check forbid readme
 
 alias f := fmt
 alias r := run

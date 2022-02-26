@@ -44,11 +44,21 @@ impl Command {
   pub(crate) fn execute(&self, remove: bool) -> Result<Diff> {
     let output = process::Command::new(self.program.clone())
       .args(self.arguments.clone())
-      .output()?;
+      .output();
+
+    if let Err(error) = output {
+      return Err(Error::Command {
+        range: self.position.start.clone(),
+        message: error.to_string(),
+      });
+    }
+
+    let output = output?;
 
     if !output.status.success() {
-      return Err(Error::CommandFailed {
+      return Err(Error::Command {
         range: self.position.start.clone(),
+        message: str::from_utf8(&output.stderr)?.to_string(),
       });
     }
 

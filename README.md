@@ -1,4 +1,6 @@
-### present
+## present
+
+[![CI](https://github.com/terror/present/actions/workflows/ci.yaml/badge.svg)](https://github.com/terror/present/actions/workflows/ci.yaml)
 
 **present** is a tool that lets you interpolate the standard output of arbitrary
 scripts that get interpreted by the shell into your markdown documents.

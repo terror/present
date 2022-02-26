@@ -1,13 +1,13 @@
 ### present
 
-**present** is a tool that lets you interpolate arbitrary scripts that get
-interpreted by the shell into your markdown documents.
+**present** is a tool that lets you interpolate the standard output of arbitrary
+scripts that get interpreted by the shell into your markdown documents.
 
 ### Usage
 
 ```present cargo run -- --help
 present 0.0.0
-Bash harder in markdown
+Interpolate the standard output of arbitrary shell scripts into your markdown files
 
 USAGE:
     present [OPTIONS]

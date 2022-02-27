@@ -6,7 +6,7 @@
 **present** is a tool that lets you interpolate the standard output of arbitrary
 scripts that get interpreted by the shell into your markdown documents.
 
-It's aims is to provide a nice way to automatically update sections of your
+It's aim is to provide a nice way to automatically update sections of your
 markdown documents that might be the standard output of a command, such as
 command-line utility help messages or benchmarks.
 

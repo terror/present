@@ -8,7 +8,7 @@ scripts that get interpreted by the shell into your markdown documents.
 
 Its aim is to provide a nice way to automatically update sections of your
 markdown documents that might be the standard output of a command, such as
-command-line utility help sections or benchmarks.
+command-line utility help outputs or benchmarks.
 
 ### Demo
 

@@ -1,9 +1,14 @@
 ## present
 
 [![CI](https://github.com/terror/present/actions/workflows/ci.yaml/badge.svg)](https://github.com/terror/present/actions/workflows/ci.yaml)
+[![crates.io](https://shields.io/crates/v/present.svg)](https://crates.io/crates/present)
 
 **present** is a tool that lets you interpolate the standard output of arbitrary
 scripts that get interpreted by the shell into your markdown documents.
+
+Its aim is to provide a nice way to automatically update sections of your
+markdown documents that might be the standard output of a command, such as
+command-line utility help outputs or benchmarks.
 
 ### Demo
 
@@ -42,32 +47,62 @@ OPTIONS:
     -V, --version        Print version information
 ```
 
-### Example
+### Examples
 
-Below is the contents of a file called `foo.md`. You can place commands at the
-start of a fenced code block:
+Below are a few examples showcasing what kind of command result interpolations
+`present` is currently able to handle.
 
-````
-foo
+<table>
+<tr>
+<td>
+  <code>present --path foo.md --in-place</code>
+</td>
+<td>
 
-```present echo bar
-```
-````
+  ````
+  foo
 
-These commands can then get interpreted by the shell by invoking the `present`
-binary on `foo.md`:
+  ```present echo bar
+  ```
+  ````
+</td>
+<td>
 
-```bash
-$ present --in-place --path foo.md
-```
+  ````
+  foo
 
-The document gets modified in-place, with the commands `stdout` interpolated
-in-between the fenced code block:
+  ```present echo bar
+  bar
+  ```
+  ````
+</td>
+</tr>
+<td>
+  <code>present --path foo.md --in-place --remove</code>
+</td>
+<td>
 
-````
-foo
+  ````
+  foo
 
-```present echo bar
-bar
-```
-````
+  ```present echo bar
+  ```
+  ````
+</td>
+<td>
+
+  ````
+  foo
+
+  bar
+  ````
+</td>
+</tr>
+</table>
+
+### Prior Art
+
+This project is loosely inspired by [`Cog`](https://github.com/nedbat/cog), the
+code generation tool. However, as mentioned above, this project's main target is
+markdown documents that may benefit to have certain sections automatically
+updated, due to being the result of a command invocation.

@@ -1,7 +1,8 @@
 use crate::common::*;
+use crate::{codeblock::parse_codeblock, Command, Position, Result};
 
 #[derive(Debug, Clone)]
-pub(crate) struct Parser<'a> {
+pub struct Parser<'a> {
   src: &'a str,
 }
 
@@ -10,7 +11,7 @@ impl<'a> Parser<'a> {
     Self { src }
   }
 
-  pub(crate) fn parse(&self) -> Result<Vec<Command>> {
+  pub(crate) fn parse(&self) -> Result<Vec<(Position, Command)>> {
     Ok(
       MarkdownParser::new(self.src)
         .into_offset_iter()
@@ -20,8 +21,8 @@ impl<'a> Parser<'a> {
             (Event::Start(Tag::CodeBlock(CodeBlockKind::Fenced(_))), _)
           )
         })
-        .filter_map(|event| Command::from(Codeblock::new(self.src, event.1)))
-        .collect::<Vec<Command>>(),
+        .filter_map(|event| parse_codeblock(self.src, event.1))
+        .collect(),
     )
   }
 }

@@ -4,14 +4,11 @@ use crate::common::*;
 #[snafu(visibility(pub(crate)))]
 pub enum Error {
   #[snafu(display(
-    "Command at position: {:?} failed to run with message: {}",
-    range,
+    "Program {} failed to execute with message: {}",
+    program,
     message
   ))]
-  Command {
-    range: Range<usize>,
-    message: String,
-  },
+  Command { program: String, message: String },
 
   #[snafu(context(false), display("IO Error: {}", source))]
   Io { source: io::Error },
@@ -20,7 +17,7 @@ pub enum Error {
   PathDoesNotExist { path: PathBuf },
 
   #[snafu(context(false), display("Utf8 Error: {}", source))]
-  Utf8 { source: str::Utf8Error },
+  Utf8 { source: std::string::FromUtf8Error },
 
   #[snafu(context(false), display("Walkdir Error: {}", source))]
   Walkdir { source: walkdir::Error },

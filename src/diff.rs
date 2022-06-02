@@ -1,7 +1,8 @@
 use crate::common::*;
+use crate::RopeExt;
 
 #[derive(Debug, Clone)]
-pub(crate) struct Diff {
+pub struct Diff {
   pub(crate) content: String,
   pub(crate) range: Range<usize>,
 }
@@ -9,15 +10,15 @@ pub(crate) struct Diff {
 impl Diff {
   pub(crate) fn offset(&mut self, offset: isize) {
     if offset < 0 {
-      self.range.start = self.range.start.saturating_sub(offset.abs() as usize);
-      self.range.end = self.range.end.saturating_sub(offset.abs() as usize);
+      self.range.start = self.range.start.saturating_sub(offset.unsigned_abs());
+      self.range.end = self.range.end.saturating_sub(offset.unsigned_abs());
     } else {
       self.range.start += offset as usize;
       self.range.end += offset as usize;
     }
   }
 
-  pub(crate) fn print(&self, content: Rope) {
+  pub(crate) fn print(&self, content: &Rope) {
     for change in TextDiff::from_lines(
       &content.to_string(),
       &content.simulate(self.clone()).to_string(),

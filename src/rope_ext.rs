@@ -1,4 +1,5 @@
 use crate::common::*;
+use crate::Diff;
 
 pub(crate) trait RopeExt {
   fn apply(&mut self, diff: Diff);

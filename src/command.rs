@@ -4,7 +4,7 @@ use crate::{Error, Result};
 const PREFIX: &str = "present";
 
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub struct Command {
+pub(crate) struct Command {
   program: String,
   arguments: Vec<String>,
 }

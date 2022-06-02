@@ -13,13 +13,12 @@ mod prompt;
 mod rope_ext;
 
 // Publicly exposed
-pub use crate::{
-  command::Command, diff::Diff, error::Error, file::File, parser::Parser,
-  position::Position,
-};
+pub use crate::{diff::Diff, error::Error, file::File};
 
 // Public only to crate
-pub(crate) use crate::{prompt::prompt, rope_ext::RopeExt};
+pub(crate) use crate::{
+  command::Command, parser::Parser, prompt::prompt, rope_ext::RopeExt, position::Position,
+};
 
-// type aliases
+/// Present's internal result type
 pub type Result<T = (), E = Error> = std::result::Result<T, E>;

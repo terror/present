@@ -1,5 +1,6 @@
 use crate::common::*;
 
+/// Present's internal error type
 #[derive(Debug, Snafu)]
 #[snafu(visibility(pub(crate)))]
 pub enum Error {

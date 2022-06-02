@@ -1,10 +1,13 @@
 use crate::common::*;
 use crate::RopeExt;
 
+/// Represents a diff in a [`File`](crate::File)
 #[derive(Debug, Clone)]
 pub struct Diff {
-  pub(crate) content: String,
-  pub(crate) range: Range<usize>,
+  /// A string that will be inserted into `range`
+  pub content: String,
+  /// A range from the original string that will get replaced
+  pub range: Range<usize>,
 }
 
 impl Diff {
@@ -18,7 +21,12 @@ impl Diff {
     }
   }
 
-  pub(crate) fn print(&self, content: &Rope) {
+  /// Prints the diff by using [`TextDiff`].
+  ///
+  /// Since the struct does not store any context of what it's diffing on, you
+  /// need to supply the original content (as a [`Rope`] reference) to this
+  /// function.
+  pub fn print(&self, content: &Rope) {
     for change in TextDiff::from_lines(
       &content.to_string(),
       &content.simulate(self.clone()).to_string(),

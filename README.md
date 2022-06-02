@@ -34,13 +34,15 @@ present 0.1.1
 Interpolate the standard output of arbitrary shell scripts into your markdown files
 
 USAGE:
-    present [OPTIONS]
+    present [OPTIONS] [PATH]
+
+ARGS:
+    <PATH>    A file or directory path to present.
 
 OPTIONS:
     -h, --help           Print help information
         --in-place       Modify documents in place.
         --interactive    Interactively present markdown documents.
-        --path <PATH>    A file or directory path to present.
         --pretty         Pretty print documents to the terminal.
         --recursive      Recursively present markdown documents.
         --remove         Remove commands within markdown documents.
@@ -55,7 +57,7 @@ Below are a few examples showcasing what kind of command result interpolations
 <table>
 <tr>
 <td>
-  <code>present --path foo.md --in-place</code>
+  <code>present foo.md --in-place</code>
 </td>
 <td>
 
@@ -78,7 +80,7 @@ Below are a few examples showcasing what kind of command result interpolations
 </td>
 </tr>
 <td>
-  <code>present --path foo.md --in-place --remove</code>
+  <code>present foo.md --in-place --remove</code>
 </td>
 <td>
 

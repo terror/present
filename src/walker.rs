@@ -11,7 +11,7 @@ pub(crate) struct Walker {
 
 #[derive(Debug, Clone, StructOpt)]
 pub(crate) struct WalkerOptions {
-  #[clap(long, help = "A file or directory path to present.")]
+  #[clap(help = "A file or directory path to present.")]
   pub(crate) path: Option<PathBuf>,
   #[clap(long, help = "Recursively present markdown documents.")]
   pub(crate) recursive: bool,

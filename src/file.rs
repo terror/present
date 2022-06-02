@@ -7,6 +7,7 @@ pub struct File {
   content: Rope,
   commands: Vec<(Position, Command)>,
   remove: bool,
+  interactive: bool,
 }
 
 impl File {
@@ -20,11 +21,19 @@ impl File {
       content: Rope::from_str(&content.clone()),
       commands: parser.parse()?,
       remove: false,
+      interactive: false,
     })
   }
 
   pub fn remove(self, on: bool) -> Self {
     Self { remove: on, ..self }
+  }
+
+  pub fn interactive(self, on: bool) -> Self {
+    Self {
+      interactive: on,
+      ..self
+    }
   }
 
   pub fn diffs(&self) -> impl Iterator<Item = Result<Diff>> + '_ {
@@ -49,26 +58,15 @@ impl File {
       let prev = self.content.len_chars();
       diff.offset(offset);
 
+      if self.interactive {
+        diff.print(&self.content);
+        if prompt("Apply changes? [Y/N]")?.as_str() != "y" {
+          continue;
+        }
+      }
+
       self.content.apply(diff.clone());
       offset += self.content.len_chars() as isize - prev as isize;
-    }
-
-    Ok(())
-  }
-
-  pub fn present_interactive(&mut self) -> Result {
-    let mut offset = 0;
-
-    let diffs = self.diffs().collect::<Result<Vec<Diff>>>()?;
-    for mut diff in diffs {
-      let prev = self.content.len_chars();
-      diff.offset(offset);
-
-      diff.print(&self.content);
-      if prompt("Apply changes? [Y/N]")?.as_str() == "y" {
-        self.content.apply(diff.clone());
-        offset += self.content.len_chars() as isize - prev as isize;
-      }
     }
 
     Ok(())

@@ -23,12 +23,11 @@ impl Arguments {
     Walker::new(self.walker_options)?
       .files()
       .try_for_each(|file| {
-        let mut file = File::new(file)?.remove(self.remove);
+        let mut file = File::new(file)?
+          .remove(self.remove)
+          .interactive(self.interactive);
 
-        match self.interactive {
-          true => file.present_interactive(),
-          false => file.present(),
-        }?;
+        file.present()?;
 
         match self.in_place {
           true => file.save()?,

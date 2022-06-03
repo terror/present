@@ -30,7 +30,7 @@ Below is the standard output of `present --help`, interpolated by the `present`
 binary itself!
 
 ```present cargo run -- --help
-present 0.1.1
+present 0.2.0
 Interpolate the standard output of arbitrary shell scripts into your markdown files
 
 USAGE:
@@ -61,7 +61,7 @@ Below are a few examples showcasing what kind of command result interpolations
 </td>
 <td>
 
-  ````
+  ````ignore
   foo
 
   ```present echo bar
@@ -70,7 +70,7 @@ Below are a few examples showcasing what kind of command result interpolations
 </td>
 <td>
 
-  ````
+  ````ignore
   foo
 
   ```present echo bar
@@ -84,7 +84,7 @@ Below are a few examples showcasing what kind of command result interpolations
 </td>
 <td>
 
-  ````
+  ````ignore
   foo
 
   ```present echo bar
@@ -93,7 +93,7 @@ Below are a few examples showcasing what kind of command result interpolations
 </td>
 <td>
 
-  ````
+  ````ignore
   foo
 
   bar
@@ -101,6 +101,39 @@ Below are a few examples showcasing what kind of command result interpolations
 </td>
 </tr>
 </table>
+
+### Usage as a library
+
+`present` can be used as a library by adding this line to the `[dependencies]`
+section in `Cargo.toml`:
+
+```present ./bin/get_version
+present = "0.2.0"
+```
+
+With `present`, you can create a `File` struct by pointing it to a path. This
+will parse all codeblocks with the `present` prefix, and add them as commands to
+the struct. From there, you can present the file by using the `File::present`
+function, which will modify the internal content. From there, you can use the
+`File::print` or `File::save` functions to print the presented document to
+stdout or save it back to the original file.
+
+```rust
+use std::path::PathBuf;
+
+fn main() {
+    let mut file = present::File::new(PathBuf::from("README.md")).unwrap();
+    file.present().unwrap();
+    file.save();
+}
+```
+
+> The above snippet is tested with rustdoc. A really cool side effect of this,
+is that the test loads the README itself, and runs `present` over it. `present`
+is also used throughout the README (to get help-text and version numbers), which
+means that when running `cargo test`, the README gets automatically updated.
+
+You can read more about using the library on [docs.rs](https://docs.rs/present).
 
 ### Prior Art
 

@@ -1,5 +1,4 @@
-use crate::common::*;
-use crate::{Command, Position};
+use crate::{common::*, Command, Position};
 
 pub(crate) fn parse_codeblock(
   src: &'_ str,

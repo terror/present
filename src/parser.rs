@@ -1,5 +1,4 @@
-use crate::common::*;
-use crate::{codeblock::parse_codeblock, Command, Position};
+use crate::{codeblock::parse_codeblock, common::*, Command, Position};
 
 #[derive(Debug, Clone)]
 pub(crate) struct Parser<'a> {

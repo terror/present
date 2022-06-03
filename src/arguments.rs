@@ -1,5 +1,7 @@
-use crate::walker::{Walker, WalkerOptions};
-use present::{File, Result};
+use {
+  crate::walker::{Walker, WalkerOptions},
+  present::{File, Result},
+};
 
 use clap::Parser as StructOpt;
 

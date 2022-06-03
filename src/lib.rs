@@ -17,7 +17,8 @@ pub use crate::{diff::Diff, error::Error, file::File};
 
 // Public only to crate
 pub(crate) use crate::{
-  command::Command, parser::Parser, prompt::prompt, rope_ext::RopeExt, position::Position,
+  command::Command, parser::Parser, position::Position, prompt::prompt,
+  rope_ext::RopeExt,
 };
 
 /// Present's internal result type

@@ -1,5 +1,4 @@
-use crate::common::*;
-use crate::{Error, Result};
+use crate::{common::*, Error, Result};
 
 const PREFIX: &str = "present";
 

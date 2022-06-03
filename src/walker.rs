@@ -1,7 +1,7 @@
-use crate::path_ext::PathExt;
-use clap::Parser as StructOpt;
-use present::Result;
-use std::path::PathBuf;
+use {
+  crate::path_ext::PathExt, clap::Parser as StructOpt, present::Result,
+  std::path::PathBuf,
+};
 
 #[derive(Debug)]
 pub(crate) struct Walker {

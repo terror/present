@@ -1,5 +1,6 @@
-use crate::common::*;
-use crate::{prompt, Command, Diff, Parser, Position, Result, RopeExt};
+use crate::{
+  common::*, prompt, Command, Diff, Parser, Position, Result, RopeExt,
+};
 
 /// Represents a parsed Markdown file that can be presented
 #[derive(Debug, Clone)]
@@ -16,7 +17,8 @@ impl File {
   ///
   /// # Errors
   ///
-  /// This function will return an error if the file is not readable into a string.
+  /// This function will return an error if the file is not readable into a
+  /// string.
   pub fn new(path: PathBuf) -> Result<Self> {
     let content = fs::read_to_string(&path)?;
 
@@ -31,9 +33,9 @@ impl File {
     })
   }
 
-  /// Setting this to true will make the [`present`](File::present) function replace the whole code
-  /// block with the command output. If kept at false (the default), it will place the output
-  /// inside the code block.
+  /// Setting this to true will make the [`present`](File::present) function
+  /// replace the whole code block with the command output. If kept at false
+  /// (the default), it will place the output inside the code block.
   ///
   /// # Example
   ///
@@ -47,8 +49,9 @@ impl File {
     Self { remove: on, ..self }
   }
 
-  /// Setting this to true will make the [`present`](File::present) function interactive. For each
-  /// diff in a file, the user will be asked if they want to apply it or not.
+  /// Setting this to true will make the [`present`](File::present) function
+  /// interactive. For each diff in a file, the user will be asked if they
+  /// want to apply it or not.
   ///
   /// # Example
   ///
@@ -65,6 +68,9 @@ impl File {
   }
 
   /// Returns an iterator of [`Diff`]s in the file.
+  ///
+  /// The [`Diff`]s are returned as results. If the command fails, the item will
+  /// be of the `Err` kind.
   pub fn diffs(&self) -> impl Iterator<Item = Result<Diff>> + '_ {
     self.commands.iter().map(|(position, command)| {
       Ok(Diff {
@@ -81,8 +87,8 @@ impl File {
 
   /// Applies all diffs produced by [`diffs`](File::diffs) by mutating self.
   ///
-  /// If [`interactive`](File::interactive) is set to `true`, the user will be asked if they want
-  /// to apply the change for each diff.
+  /// If [`interactive`](File::interactive) is set to `true`, the user will be
+  /// asked if they want to apply the change for each diff.
   pub fn present(&mut self) -> Result {
     let mut offset = 0;
 
@@ -110,8 +116,8 @@ impl File {
     Ok(fs::write(&self.path, self.content.to_string())?)
   }
 
-  /// Prints the current state to stdout. If `pretty` is true, [`termimad`] will be used to
-  /// prettyprint the content.
+  /// Prints the current state to stdout. If `pretty` is true, [`termimad`] will
+  /// be used to prettyprint the content.
   pub fn print(&self, pretty: bool) {
     match pretty {
       true => print_inline(&self.content.to_string()),

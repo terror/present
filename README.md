@@ -2,6 +2,7 @@
 
 [![CI](https://github.com/terror/present/actions/workflows/ci.yaml/badge.svg)](https://github.com/terror/present/actions/workflows/ci.yaml)
 [![crates.io](https://shields.io/crates/v/present.svg)](https://crates.io/crates/present)
+[![docs.rs](https://img.shields.io/docsrs/present)](https://docs.rs/present)
 
 **present** is a tool that lets you interpolate the standard output of arbitrary
 scripts that get interpreted by the shell into your markdown documents.
@@ -14,17 +15,16 @@ command-line utility help outputs or benchmarks.
 
 Below is a short demo showcasing the main functionality of the program.
 
-[![asciicast](https://asciinema.org/a/Mngwm9d3eJcJWtilQrAvjgh2D.svg)](https://asciinema.org/a/Mngwm9d3eJcJWtilQrAvjgh2D)
+[![asciicast](https://asciinema.org/a/6AO2ME0abbvn93dr4Dh4lenM0.svg)](https://asciinema.org/a/6AO2ME0abbvn93dr4Dh4lenM0)
 
-### Installation
+### CLI
 
-You can install `present` with the rust package manager Cargo:
+You can install the `present` command-line utility with the rust package manager
+[cargo](https://github.com/rust-lang/cargo):
 
 ```bash
 $ cargo install present
 ```
-
-### Usage
 
 Below is the standard output of `present --help`, interpolated by the `present`
 binary itself!
@@ -48,6 +48,39 @@ OPTIONS:
         --remove         Remove commands within markdown documents.
     -V, --version        Print version information
 ```
+
+### Library
+
+`present` can be used as a library by adding this line to the `[dependencies]`
+section in `Cargo.toml`:
+
+```present ./bin/get_version
+present = "0.2.0"
+```
+
+With `present`, you can create a `File` struct by pointing it to a path. This
+will parse all codeblocks with the `present` prefix, and add them as commands to
+the struct. From there, you can present the file by using the `File::present`
+function, which will modify the internal content. From there, you can use the
+`File::print` or `File::save` functions to print the presented document to
+stdout or save it back to the original file.
+
+```rust
+use std::path::PathBuf;
+
+fn main() {
+  let mut file = present::File::new(PathBuf::from("README.md")).unwrap();
+  file.present().unwrap();
+  file.save();
+}
+```
+
+> The above snippet is tested with rustdoc. A really cool side effect of this,
+is that the test loads the README itself, and runs `present` over it. `present`
+is also used throughout the README (to get help-text and version numbers), which
+means that when running `cargo test`, the README gets automatically updated.
+
+You can read more about using the library on [docs.rs](https://docs.rs/present).
 
 ### Examples
 
@@ -101,39 +134,6 @@ Below are a few examples showcasing what kind of command result interpolations
 </td>
 </tr>
 </table>
-
-### Usage as a library
-
-`present` can be used as a library by adding this line to the `[dependencies]`
-section in `Cargo.toml`:
-
-```present ./bin/get_version
-present = "0.2.0"
-```
-
-With `present`, you can create a `File` struct by pointing it to a path. This
-will parse all codeblocks with the `present` prefix, and add them as commands to
-the struct. From there, you can present the file by using the `File::present`
-function, which will modify the internal content. From there, you can use the
-`File::print` or `File::save` functions to print the presented document to
-stdout or save it back to the original file.
-
-```rust
-use std::path::PathBuf;
-
-fn main() {
-    let mut file = present::File::new(PathBuf::from("README.md")).unwrap();
-    file.present().unwrap();
-    file.save();
-}
-```
-
-> The above snippet is tested with rustdoc. A really cool side effect of this,
-is that the test loads the README itself, and runs `present` over it. `present`
-is also used throughout the README (to get help-text and version numbers), which
-means that when running `cargo test`, the README gets automatically updated.
-
-You can read more about using the library on [docs.rs](https://docs.rs/present).
 
 ### Prior Art
 

@@ -85,7 +85,6 @@ impl Test {
 
     command
       .current_dir(&self.tempdir)
-      .arg("--path")
       .arg(self.tempdir.path())
       .args(self.arguments.clone());
 
@@ -194,7 +193,7 @@ fn invalid_command() -> Result {
     .expected_status(1)
     .expected_stderr(
       "
-      error: Command at position: 0..20 failed to run with message: No such file or directory (os error 2)
+      error: Program foobarbaz failed to execute with message: No such file or directory (os error 2)
       ",
     )
     .run()
@@ -480,7 +479,7 @@ fn interactive_accept() -> Result {
     .tempdir()?;
 
   let mut command = Command::new(executable_path(env!("CARGO_PKG_NAME")))
-    .args(["--path", tempdir.path().to_str().unwrap(), "--interactive"])
+    .args([tempdir.path().to_str().unwrap(), "--interactive"])
     .stdin(Stdio::piped())
     .stdout(Stdio::piped())
     .stderr(Stdio::piped())
@@ -503,7 +502,7 @@ fn interactive_reject() -> Result {
     .tempdir()?;
 
   let mut command = Command::new(executable_path(env!("CARGO_PKG_NAME")))
-    .args(["--path", tempdir.path().to_str().unwrap(), "--interactive"])
+    .args([tempdir.path().to_str().unwrap(), "--interactive"])
     .stdin(Stdio::piped())
     .stdout(Stdio::piped())
     .stderr(Stdio::piped())

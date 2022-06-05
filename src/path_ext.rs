@@ -1,10 +1,15 @@
-use crate::common::*;
+use {
+  present::{Error, Result},
+  std::path::PathBuf,
+};
 
 const MARKDOWN: &str = "md";
 
 pub(crate) trait PathExt {
   fn is_markdown(&self) -> bool;
-  fn validate(&self) -> Result<PathBuf>;
+  fn validate(self) -> Result<Self>
+  where
+    Self: Sized;
 }
 
 impl PathExt for PathBuf {
@@ -12,11 +17,10 @@ impl PathExt for PathBuf {
     self.extension().unwrap_or_default() == MARKDOWN
   }
 
-  fn validate(&self) -> Result<PathBuf> {
-    let path = self.clone();
+  fn validate(self) -> Result<Self> {
     match self.exists() {
-      true => Ok(path),
-      _ => Err(Error::PathDoesNotExist { path }),
+      true => Ok(self),
+      _ => Err(Error::PathDoesNotExist { path: self }),
     }
   }
 }

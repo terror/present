@@ -1,23 +1,31 @@
-use crate::common::*;
+use crate::{common::*, RopeExt};
 
+/// Represents a diff in a [`File`](crate::File)
 #[derive(Debug, Clone)]
-pub(crate) struct Diff {
-  pub(crate) content: String,
-  pub(crate) range: Range<usize>,
+pub struct Diff {
+  /// A string that will be inserted into `range`
+  pub content: String,
+  /// A range from the original string that will get replaced
+  pub range: Range<usize>,
 }
 
 impl Diff {
   pub(crate) fn offset(&mut self, offset: isize) {
     if offset < 0 {
-      self.range.start = self.range.start.saturating_sub(offset.abs() as usize);
-      self.range.end = self.range.end.saturating_sub(offset.abs() as usize);
+      self.range.start = self.range.start.saturating_sub(offset.unsigned_abs());
+      self.range.end = self.range.end.saturating_sub(offset.unsigned_abs());
     } else {
       self.range.start += offset as usize;
       self.range.end += offset as usize;
     }
   }
 
-  pub(crate) fn print(&self, content: Rope) {
+  /// Prints the diff by using [`TextDiff`].
+  ///
+  /// Since the struct does not store any context of what it's diffing on, you
+  /// need to supply the original content (as a [`Rope`] reference) to this
+  /// function.
+  pub fn print(&self, content: &Rope) {
     for change in TextDiff::from_lines(
       &content.to_string(),
       &content.simulate(self.clone()).to_string(),

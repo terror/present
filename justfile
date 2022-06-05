@@ -26,13 +26,13 @@ forbid:
   ./bin/forbid
 
 run *args:
-  cargo run -- --{{args}}
+  cargo run -- {{args}}
 
 readme:
-  cargo run -- --in-place --path README.md
+  cargo run -- README.md --in-place
 
-test:
-  cargo test
+test *args:
+  cargo test --all-targets {{args}}
 
 usage:
   cargo run -- --help | pbcopy

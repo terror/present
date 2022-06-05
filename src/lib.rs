@@ -12,11 +12,9 @@
 //! ```rust
 //! use std::path::PathBuf;
 //!
-//! fn main() {
-//!     let mut file = present::File::new(PathBuf::from("README.md")).unwrap();
-//!     file.present().unwrap();
-//!     file.save();
-//! }
+//! let mut file = present::File::new(PathBuf::from("README.md")).unwrap();
+//! file.present().unwrap();
+//! file.save();
 //! ```
 
 mod codeblock;

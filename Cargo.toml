@@ -13,10 +13,10 @@ resolver = "2"
 
 [dependencies]
 console = "0.15.0"
-pulldown-cmark = "0.9.1"
+pulldown-cmark = { version = "0.9.1", default-features = false, features = ["simd"] }
 ropey = "1.5.0"
 similar = "2.1.0"
-snafu = "0.7.1"
+snafu = { version = "0.7.1", default-features = false, features = ["std"] }
 termimad = "0.20.1"
 walkdir = "2.3.2"
 

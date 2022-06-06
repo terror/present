@@ -24,7 +24,7 @@ impl Tokenize for String {
               message: "Unmatched delimeter".into(),
             })?;
 
-          while let Some(next) = chars.next() {
+          for next in chars.by_ref() {
             match next {
               next if next == ch => break,
               _ => group.push(next),

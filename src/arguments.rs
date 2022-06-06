@@ -1,9 +1,8 @@
 use {
   crate::walker::{Walker, WalkerOptions},
+  clap::Parser as StructOpt,
   present::{File, Result},
 };
-
-use clap::Parser as StructOpt;
 
 #[derive(Debug, StructOpt)]
 #[clap(about = env!("CARGO_PKG_DESCRIPTION"), version = env!("CARGO_PKG_VERSION"))]

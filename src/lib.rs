@@ -27,6 +27,7 @@ mod parser;
 mod position;
 mod prompt;
 mod rope_ext;
+mod tokenize;
 
 // Publicly exposed
 pub use crate::{diff::Diff, error::Error, file::File};
@@ -34,7 +35,7 @@ pub use crate::{diff::Diff, error::Error, file::File};
 // Public only to crate
 pub(crate) use crate::{
   command::Command, parser::Parser, position::Position, prompt::prompt,
-  rope_ext::RopeExt,
+  rope_ext::RopeExt, tokenize::Tokenize,
 };
 
 /// Present's internal result type

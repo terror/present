@@ -17,6 +17,9 @@ pub enum Error {
   #[snafu(display("Path does not exist: {}", path.display()))]
   PathDoesNotExist { path: PathBuf },
 
+  #[snafu(display("Tokenize Error: {}", message))]
+  TokenizeError { message: String },
+
   #[snafu(context(false), display("Utf8 Error: {}", source))]
   Utf8 { source: std::string::FromUtf8Error },
 

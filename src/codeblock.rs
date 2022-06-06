@@ -1,9 +1,9 @@
-use crate::{common::*, Command, Position};
+use crate::{common::*, Command, Position, Result};
 
 pub(crate) fn parse_codeblock(
   src: &'_ str,
   range: Range<usize>,
-) -> Option<(Position, Command)> {
+) -> Result<Option<(Position, Command)>> {
   let start_start = range.start;
   let mut start_end = start_start;
 
@@ -44,7 +44,7 @@ pub(crate) fn parse_codeblock(
     .map(|s| s.into())
     .collect::<Vec<String>>();
 
-  match Command::from(codeblock_args) {
+  Ok(match Command::from(codeblock_args)? {
     Some(command) => {
       let position = Position {
         start: start_start..start_end,
@@ -54,7 +54,7 @@ pub(crate) fn parse_codeblock(
       Some((position, command))
     }
     None => None,
-  }
+  })
 }
 
 #[cfg(test)]
@@ -64,11 +64,14 @@ mod tests {
   #[test]
   fn simple() {
     let (position, command) =
-      parse_codeblock("```present echo bar\n```", 0..22).unwrap();
+      parse_codeblock("```present echo bar\n```", 0..22)
+        .unwrap()
+        .unwrap();
 
     assert_eq!(
       command,
       Command::from(vec!["present".into(), "echo".into(), "bar".into()])
+        .unwrap()
         .unwrap()
     );
 
@@ -84,12 +87,15 @@ mod tests {
   #[test]
   fn with_exterior_content() {
     let (position, command) =
-      parse_codeblock("foo\n\n```present echo bar\n```\n\nbaz", 5..29).unwrap();
+      parse_codeblock("foo\n\n```present echo bar\n```\n\nbaz", 5..29)
+        .unwrap()
+        .unwrap();
 
     assert_eq!(
       command,
       Command::from(vec!["present".into(), "echo".into(), "bar".into()])
-        .unwrap(),
+        .unwrap()
+        .unwrap()
     );
 
     assert_eq!(

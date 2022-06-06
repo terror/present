@@ -104,7 +104,7 @@ impl Test {
     assert_eq!(
       output.status.code(),
       Some(self.expected_status),
-      "\n\nMarkdown:\n\n{:?}\nfailed: {}",
+      "\n\nMarkdown:\n{:?}\nfailed with output: {}",
       self.markdown,
       stderr
     );
@@ -467,6 +467,73 @@ fn multiple_markdown_files() -> Result {
       ```present echo foo
       foo
       ```
+      ",
+    )
+    .run()
+}
+
+#[test]
+fn inline_script_simple() -> Result {
+  Test::new()?
+    .markdown(
+      "
+      ```present bash -c 'echo foo'
+      ```
+      ",
+    )
+    .expected_status(0)
+    .expected_stdout(
+      "
+      ```present bash -c 'echo foo'
+      foo
+      ```
+      ",
+    )
+    .run()
+}
+
+#[test]
+fn inline_script_complex() -> Result {
+  Test::new()?
+    .markdown(
+      "
+      ```present bash -c 'for i in {1..10}; do echo $i; done'
+      ```
+      ",
+    )
+    .expected_status(0)
+    .expected_stdout(
+      "
+      ```present bash -c 'for i in {1..10}; do echo $i; done'
+      1
+      2
+      3
+      4
+      5
+      6
+      7
+      8
+      9
+      10
+      ```
+      ",
+    )
+    .run()
+}
+
+#[test]
+fn inline_unmatched_delimiter() -> Result {
+  Test::new()?
+    .markdown(
+      "
+      ```present bash -c 'echo foo
+      ```
+      ",
+    )
+    .expected_status(1)
+    .expected_stderr(
+      "
+      error: Tokenize Error: Unmatched delimeter
       ",
     )
     .run()

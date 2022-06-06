@@ -20,7 +20,7 @@ impl Tokenize for String {
             .collect::<Vec<char>>()
             .iter()
             .find(|next| **next == ch)
-            .ok_or(Error::LexError {
+            .ok_or(Error::TokenizeError {
               message: "Unmatched delimeter".into(),
             })?;
 

@@ -14,11 +14,11 @@ pub enum Error {
   #[snafu(context(false), display("IO Error: {}", source))]
   Io { source: io::Error },
 
-  #[snafu(display("Lex error: {}", message))]
-  LexError { message: String },
-
   #[snafu(display("Path does not exist: {}", path.display()))]
   PathDoesNotExist { path: PathBuf },
+
+  #[snafu(display("Tokenize Error: {}", message))]
+  TokenizeError { message: String },
 
   #[snafu(context(false), display("Utf8 Error: {}", source))]
   Utf8 { source: std::string::FromUtf8Error },

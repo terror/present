@@ -1,6 +1,6 @@
 [package]
 name = "present"
-version = "0.2.0"
+version = "0.2.1"
 description = "Interpolate the standard output of arbitrary shell scripts into your markdown files"
 authors = ["Liam <liam@scalzulli.com>"]
 license = "CC0-1.0"
@@ -12,6 +12,7 @@ keywords = ["command-line", "productivity", "utility", "markdown", "bash"]
 resolver = "2"
 
 [dependencies]
+clap = { version = "3.1.2", features = ["derive"] }
 console = "0.15.0"
 pulldown-cmark = { version = "0.9.1", default-features = false, features = ["simd"] }
 ropey = "1.5.0"
@@ -19,10 +20,6 @@ similar = "2.1.0"
 snafu = { version = "0.7.1", default-features = false, features = ["std"] }
 termimad = "0.20.1"
 walkdir = "2.3.2"
-
-[dependencies.clap]
-version = "3.1.2"
-features = ["derive"]
 
 [dev-dependencies]
 executable-path = "1.0.0"

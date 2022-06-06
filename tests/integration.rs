@@ -522,6 +522,24 @@ fn inline_script_complex() -> Result {
 }
 
 #[test]
+fn inline_unmatched_delimiter() -> Result {
+  Test::new()?
+    .markdown(
+      "
+      ```present bash -c 'echo foo
+      ```
+      ",
+    )
+    .expected_status(1)
+    .expected_stderr(
+      "
+      error: Tokenize Error: Unmatched delimeter
+      ",
+    )
+    .run()
+}
+
+#[test]
 fn interactive_accept() -> Result {
   let tempdir = Test::new()?
     .markdown("```present echo foo\n```")

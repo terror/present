@@ -17,7 +17,7 @@ impl File {
   ///
   /// # Errors
   ///
-  /// This function will return an error if the file if the following conditions
+  /// This function will return an error if the following conditions
   /// are true:
   /// - The file is not readable into a string
   /// - The parser failed to parse the file contents

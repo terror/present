@@ -1,4 +1,4 @@
-use crate::{common::*, Error, Result};
+use crate::{common::*, Error, Result, Tokenize};
 
 const PREFIX: &str = "present";
 
@@ -9,14 +9,14 @@ pub(crate) struct Command {
 }
 
 impl Command {
-  pub(crate) fn from(command: Vec<String>) -> Option<Self> {
-    match &*command {
+  pub(crate) fn from(command: Vec<String>) -> Result<Option<Self>> {
+    Ok(match &*command {
       [prefix, program, arguments @ ..] if prefix == PREFIX => Some(Self {
         program: program.to_string(),
-        arguments: arguments.to_owned(),
+        arguments: arguments.join(" ").tokenize()?,
       }),
       _ => None,
-    }
+    })
   }
 
   pub(crate) fn execute(&self) -> Result<String> {

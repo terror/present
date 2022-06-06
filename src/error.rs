@@ -14,6 +14,9 @@ pub enum Error {
   #[snafu(context(false), display("IO Error: {}", source))]
   Io { source: io::Error },
 
+  #[snafu(display("Lex error: {}", message))]
+  LexError { message: String },
+
   #[snafu(display("Path does not exist: {}", path.display()))]
   PathDoesNotExist { path: PathBuf },
 

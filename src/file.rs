@@ -17,8 +17,10 @@ impl File {
   ///
   /// # Errors
   ///
-  /// This function will return an error if the file is not readable into a
-  /// string.
+  /// This function will return an error if the file if the following conditions
+  /// are true:
+  /// - The file is not readable into a string
+  /// - The parser failed to parse the file contents
   pub fn new(path: PathBuf) -> Result<Self> {
     let content = fs::read_to_string(&path)?;
 
@@ -27,7 +29,7 @@ impl File {
     Ok(Self {
       path,
       content: Rope::from_str(&content.clone()),
-      commands: parser.parse(),
+      commands: parser.parse()?,
       remove: false,
       interactive: false,
     })

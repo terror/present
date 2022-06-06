@@ -9,6 +9,7 @@ impl Tokenize for String {
     let mut tokens = Vec::new();
 
     let mut chars = self.chars().peekable();
+
     while let Some(ch) = chars.next() {
       match ch {
         '\'' | '"' => {
@@ -23,12 +24,14 @@ impl Tokenize for String {
               message: "Unmatched delimeter".into(),
             })?;
 
-          for next in chars.by_ref() {
-            if next == ch {
-              break;
+          while let Some(next) = chars.next() {
+            match next {
+              next if next == ch => break,
+              _ => group.push(next),
             }
-            group.push(next);
           }
+
+          chars.next();
 
           tokens.push(group);
         }
@@ -49,8 +52,8 @@ impl Tokenize for String {
 
           tokens.extend(
             group
+              .trim()
               .split(' ')
-              .filter(|argument| !argument.is_empty())
               .map(|argument| argument.to_owned())
               .collect::<Vec<String>>(),
           );
@@ -88,8 +91,8 @@ mod tests {
   #[test]
   fn tokenize_mixed() {
     assert_eq!(
-      "a 'b' c 'd e' f g \"h i\"".to_string().tokenize().unwrap(),
-      vec!["a", "b", "c", "d e", "f", "g", "h i"]
+      "a 'b' c 'de' f g \"h i\"".to_string().tokenize().unwrap(),
+      vec!["a", "b", "c", "de", "f", "g", "h i"]
     );
   }
 

@@ -533,7 +533,7 @@ fn inline_unmatched_delimiter() -> Result {
     .expected_status(1)
     .expected_stderr(
       "
-      error: Tokenize Error: Unmatched delimeter
+      error: Lex Error: Unmatched delimeter
       ",
     )
     .run()

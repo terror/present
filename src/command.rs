@@ -1,4 +1,4 @@
-use crate::{common::*, Error, Result, Tokenize};
+use crate::{common::*, Error, Lexer, Result};
 
 const PREFIX: &str = "present";
 
@@ -13,7 +13,7 @@ impl Command {
     Ok(match &*command {
       [prefix, program, arguments @ ..] if prefix == PREFIX => Some(Self {
         program: program.to_string(),
-        arguments: arguments.join(" ").tokenize()?,
+        arguments: Lexer::lex(&arguments.join(" "))?,
       }),
       _ => None,
     })

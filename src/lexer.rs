@@ -1,14 +1,23 @@
 use crate::{Error, Result};
 
-pub(crate) trait Tokenize {
-  fn tokenize(self) -> Result<Vec<String>>;
+#[derive(Debug)]
+pub(crate) struct Lexer<'a> {
+  src: &'a str,
 }
 
-impl Tokenize for String {
-  fn tokenize(self) -> Result<Vec<String>> {
+impl<'a> Lexer<'a> {
+  fn new(src: &'a str) -> Self {
+    Self { src }
+  }
+
+  pub(crate) fn lex(src: &'a str) -> Result<Vec<String>> {
+    Lexer::new(src).tokenize()
+  }
+
+  fn tokenize(&self) -> Result<Vec<String>> {
     let mut tokens = Vec::new();
 
-    let mut chars = self.chars().peekable();
+    let mut chars = self.src.chars().peekable();
 
     while let Some(ch) = chars.next() {
       match ch {
@@ -20,7 +29,7 @@ impl Tokenize for String {
             .collect::<Vec<char>>()
             .iter()
             .find(|next| **next == ch)
-            .ok_or(Error::TokenizeError {
+            .ok_or(Error::LexError {
               message: "Unmatched delimeter".into(),
             })?;
 
@@ -69,13 +78,14 @@ impl Tokenize for String {
 mod tests {
   use super::*;
 
+  fn lex(src: &str) -> Result<Vec<String>> {
+    Lexer::new(src).tokenize()
+  }
+
   #[test]
   fn tokenize_single() {
     assert_eq!(
-      "-c 'for i in {1..10}; do echo $i; done'"
-        .to_string()
-        .tokenize()
-        .unwrap(),
+      lex("-c 'for i in {1..10}; do echo $i; done'").unwrap(),
       vec!["-c", "for i in {1..10}; do echo $i; done"]
     );
   }
@@ -83,7 +93,7 @@ mod tests {
   #[test]
   fn tokenize_multiple() {
     assert_eq!(
-      "-c 'echo foo' 'echo bar'".to_string().tokenize().unwrap(),
+      lex("-c 'echo foo' 'echo bar'").unwrap(),
       vec!["-c", "echo foo", "echo bar"]
     );
   }
@@ -91,21 +101,18 @@ mod tests {
   #[test]
   fn tokenize_mixed() {
     assert_eq!(
-      "a 'b' c 'de' f g \"h i\"".to_string().tokenize().unwrap(),
+      lex("a 'b' c 'de' f g \"h i\"").unwrap(),
       vec!["a", "b", "c", "de", "f", "g", "h i"]
     );
   }
 
   #[test]
   fn ignore_empty() {
-    assert_eq!(
-      "a     'bc'".to_string().tokenize().unwrap(),
-      vec!["a", "bc"]
-    );
+    assert_eq!(lex("a     'bc'").unwrap(), vec!["a", "bc"]);
   }
 
   #[test]
   fn unmatched_delimiter() {
-    assert!("-c 'echo foo".to_string().tokenize().is_err(),);
+    assert!(lex("-c 'echo foo").is_err());
   }
 }

@@ -23,19 +23,19 @@ mod common;
 mod diff;
 mod error;
 mod file;
+mod lexer;
 mod parser;
 mod position;
 mod prompt;
 mod rope_ext;
-mod tokenize;
 
 // Publicly exposed
 pub use crate::{diff::Diff, error::Error, file::File};
 
 // Public only to crate
 pub(crate) use crate::{
-  command::Command, parser::Parser, position::Position, prompt::prompt,
-  rope_ext::RopeExt, tokenize::Tokenize,
+  codeblock::Codeblock, command::Command, lexer::Lexer, parser::Parser,
+  position::Position, prompt::prompt, rope_ext::RopeExt,
 };
 
 /// Present's internal result type

@@ -1,15 +1,13 @@
-use crate::{
-  common::*, prompt, Command, Diff, Parser, Position, Result, RopeExt,
-};
+use crate::{common::*, prompt, Codeblock, Diff, Parser, Result, RopeExt};
 
 /// Represents a parsed Markdown file that can be presented
 #[derive(Debug, Clone)]
 pub struct File {
-  path: PathBuf,
+  codeblocks: Vec<Codeblock>,
   content: Rope,
-  commands: Vec<(Position, Command)>,
-  remove: bool,
   interactive: bool,
+  path: PathBuf,
+  remove: bool,
 }
 
 impl File {
@@ -27,11 +25,11 @@ impl File {
     let parser = Parser::new(&content);
 
     Ok(Self {
-      path,
+      codeblocks: parser.parse()?,
       content: Rope::from_str(&content.clone()),
-      commands: parser.parse()?,
-      remove: false,
       interactive: false,
+      path,
+      remove: false,
     })
   }
 
@@ -74,14 +72,18 @@ impl File {
   /// The [`Diff`]s are returned as results. If the command fails, the item will
   /// be of the `Err` kind.
   pub fn diffs(&self) -> impl Iterator<Item = Result<Diff>> + '_ {
-    self.commands.iter().map(|(position, command)| {
+    self.codeblocks.iter().map(|codeblock| {
       Ok(Diff {
-        content: command.execute()?,
+        content: codeblock.command.execute()?,
         range: match self.remove {
           // Replace the entire codeblock with `stdout`
-          true => position.start.start..position.end.end + 2,
+          true => {
+            codeblock.position.start.start..codeblock.position.end.end + 2
+          }
           // Insert in between the codeblock (start, end)
-          false => position.start.end + 1..position.end.start + 1,
+          false => {
+            codeblock.position.start.end + 1..codeblock.position.end.start + 1
+          }
         },
       })
     })

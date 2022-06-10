@@ -1,6 +1,6 @@
 [package]
 name = "present"
-version = "0.2.1"
+version = "0.2.2"
 description = "Interpolate the standard output of arbitrary shell scripts into your markdown files"
 authors = ["Liam <liam@scalzulli.com>"]
 license = "CC0-1.0"

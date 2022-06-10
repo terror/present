@@ -30,7 +30,7 @@ Below is the standard output of `present --help`, interpolated by the `present`
 binary itself!
 
 ```present cargo run -- --help
-present 0.2.1
+present 0.2.2
 Interpolate the standard output of arbitrary shell scripts into your markdown files
 
 USAGE:
@@ -55,7 +55,7 @@ OPTIONS:
 section in `Cargo.toml`:
 
 ```present ./bin/get_version
-present = "0.2.1"
+present = "0.2.2"
 ```
 
 With `present`, you can create a `File` struct by pointing it to a path. This

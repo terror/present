@@ -97,8 +97,10 @@ impl File {
     let mut offset = 0;
 
     let diffs = self.diffs().collect::<Result<Vec<Diff>>>()?;
+
     for mut diff in diffs {
       let prev = self.content.len_chars();
+
       diff.offset(offset);
 
       if self.interactive {

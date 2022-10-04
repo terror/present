@@ -30,23 +30,21 @@ Below is the standard output of `present --help`, interpolated by the `present`
 binary itself!
 
 ```present cargo run -- --help
-present 0.2.2
 Interpolate the standard output of arbitrary shell scripts into your markdown files
 
-USAGE:
-    present [OPTIONS] [PATH]
+Usage: present [OPTIONS] [PATH]
 
-ARGS:
-    <PATH>    A file or directory path to present.
+Arguments:
+  [PATH]  A file or directory path to present.
 
-OPTIONS:
-    -h, --help           Print help information
-        --in-place       Modify documents in place.
-        --interactive    Interactively present markdown documents.
-        --pretty         Pretty print documents to the terminal.
-        --recursive      Recursively present markdown documents.
-        --remove         Remove commands within markdown documents.
-    -V, --version        Print version information
+Options:
+      --recursive    Recursively present markdown documents.
+      --in-place     Modify documents in place.
+      --interactive  Interactively present markdown documents.
+      --pretty       Pretty print documents to the terminal.
+      --remove       Remove commands within markdown documents.
+  -h, --help         Print help information
+  -V, --version      Print version information
 ```
 
 ### Library

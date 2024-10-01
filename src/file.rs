@@ -94,15 +94,14 @@ impl File {
   /// If [`interactive`](File::interactive) is set to `true`, the user will be
   /// asked if they want to apply the change for each diff.
   pub fn present(&mut self) -> Result {
-    let mut offset = 0;
+    let mut offset: isize = 0;
 
     let diffs = self.diffs().collect::<Result<Vec<Diff>>>()?;
 
     for mut diff in diffs {
       let prev = self.content.len_bytes();
 
-      diff.range.start = (diff.range.start as i64 + offset) as usize;
-      diff.range.end = (diff.range.end as i64 + offset) as usize;
+      diff.offset(offset);
 
       if self.interactive {
         diff.print(&self.content);
@@ -112,7 +111,7 @@ impl File {
       }
 
       self.content.apply(diff.clone());
-      offset += self.content.len_bytes() as i64 - prev as i64;
+      offset += self.content.len_bytes() as isize - prev as isize;
     }
 
     Ok(())

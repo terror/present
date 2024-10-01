@@ -1,5 +1,7 @@
-use crate::{common::*, rope_ext::*, Codeblock, Command, Position, Result};
-use unicode_segmentation::UnicodeSegmentation;
+use crate::{
+  byte_index_to_grapheme_index, common::*, grapheme_index_to_byte_index,
+  Codeblock, Command, Position, Result,
+};
 
 #[derive(Debug, Clone)]
 pub(crate) struct Parser<'a> {

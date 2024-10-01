@@ -1,6 +1,5 @@
 //! Contains commonly used stuff from external crates
 
-// std
 pub(crate) use std::{
   fs,
   io::{self, Write},
@@ -9,7 +8,6 @@ pub(crate) use std::{
   process, str,
 };
 
-// dependencies
 pub(crate) use {
   console::Style,
   pulldown_cmark::{CodeBlockKind, Event, Parser as MarkdownParser, Tag},
@@ -17,4 +15,5 @@ pub(crate) use {
   similar::{ChangeTag, TextDiff},
   snafu::Snafu,
   termimad::print_inline,
+  unicode_segmentation::UnicodeSegmentation,
 };

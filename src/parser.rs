@@ -1,4 +1,5 @@
-use crate::{common::*, Codeblock, Command, Position, Result};
+use crate::{common::*, rope_ext::*, Codeblock, Command, Position, Result};
+use unicode_segmentation::UnicodeSegmentation;
 
 #[derive(Debug, Clone)]
 pub(crate) struct Parser<'a> {
@@ -39,33 +40,63 @@ impl<'a> Parser<'a> {
     let start_start = range.start;
     let mut start_end = start_start;
 
-    while let Some(ch) = self.src.chars().nth(start_end) {
-      match ch {
-        '`' => start_end += 1,
+    let src_graphemes: Vec<&str> = self.src.graphemes(true).collect();
+
+    while let Some(grapheme) =
+      src_graphemes.get(byte_index_to_grapheme_index(self.src, start_end))
+    {
+      match *grapheme {
+        "`" => {
+          start_end = grapheme_index_to_byte_index(
+            self.src,
+            byte_index_to_grapheme_index(self.src, start_end) + 1,
+          )
+        }
         _ => break,
       }
     }
 
-    while let Some(ch) = self.src.chars().nth(start_end) {
-      match ch {
-        '`' | '\n' => break,
-        _ => start_end += 1,
+    while let Some(grapheme) =
+      src_graphemes.get(byte_index_to_grapheme_index(self.src, start_end))
+    {
+      match *grapheme {
+        "`" | "\n" => break,
+        _ => {
+          start_end = grapheme_index_to_byte_index(
+            self.src,
+            byte_index_to_grapheme_index(self.src, start_end) + 1,
+          )
+        }
       }
     }
 
     let end_end = range.end - 1;
     let mut end_start = end_end;
 
-    while let Some(ch) = self.src.chars().nth(end_start) {
-      match ch {
-        '`' => break,
-        _ => end_start -= 1,
+    while let Some(grapheme) =
+      src_graphemes.get(byte_index_to_grapheme_index(self.src, end_start))
+    {
+      match *grapheme {
+        "`" => break,
+        _ => {
+          end_start = grapheme_index_to_byte_index(
+            self.src,
+            byte_index_to_grapheme_index(self.src, end_start) - 1,
+          )
+        }
       }
     }
 
-    while let Some(ch) = self.src.chars().nth(end_start) {
-      match ch {
-        '`' => end_start -= 1,
+    while let Some(grapheme) =
+      src_graphemes.get(byte_index_to_grapheme_index(self.src, end_start))
+    {
+      match *grapheme {
+        "`" => {
+          end_start = grapheme_index_to_byte_index(
+            self.src,
+            byte_index_to_grapheme_index(self.src, end_start) - 1,
+          )
+        }
         _ => break,
       }
     }
@@ -134,6 +165,28 @@ mod tests {
       Position {
         start: 5..24,
         end: 24..28
+      }
+    );
+  }
+
+  #[test]
+  fn parse_codeblock_with_unicode() {
+    let parser = Parser::new("```present echo 🚀\n```");
+
+    let codeblock = parser.parse_codeblock(0..23).unwrap().unwrap();
+
+    assert_eq!(
+      codeblock.command,
+      Command::from(vec!["present".into(), "echo".into(), "🚀".into()])
+        .unwrap()
+        .unwrap()
+    );
+
+    assert_eq!(
+      codeblock.position,
+      Position {
+        start: 0..20,
+        end: 20..22
       }
     );
   }

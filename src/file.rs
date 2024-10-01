@@ -99,9 +99,10 @@ impl File {
     let diffs = self.diffs().collect::<Result<Vec<Diff>>>()?;
 
     for mut diff in diffs {
-      let prev = self.content.len_chars();
+      let prev = self.content.len_bytes();
 
-      diff.offset(offset);
+      diff.range.start = (diff.range.start as i64 + offset) as usize;
+      diff.range.end = (diff.range.end as i64 + offset) as usize;
 
       if self.interactive {
         diff.print(&self.content);
@@ -111,7 +112,7 @@ impl File {
       }
 
       self.content.apply(diff.clone());
-      offset += self.content.len_chars() as isize - prev as isize;
+      offset += self.content.len_bytes() as i64 - prev as i64;
     }
 
     Ok(())

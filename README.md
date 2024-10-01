@@ -43,8 +43,8 @@ Options:
       --interactive  Interactively present markdown documents.
       --pretty       Pretty print documents to the terminal.
       --remove       Remove commands within markdown documents.
-  -h, --help         Print help information
-  -V, --version      Print version information
+  -h, --help         Print help
+  -V, --version      Print version
 ```
 
 ### Library
@@ -53,7 +53,7 @@ Options:
 section in `Cargo.toml`:
 
 ```present ./bin/get_version
-present = "0.2.2"
+present = "0.2.3"
 ```
 
 With `present`, you can create a `File` struct by pointing it to a path. This

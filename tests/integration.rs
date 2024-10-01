@@ -584,3 +584,31 @@ fn interactive_reject() -> Result {
 
   Ok(())
 }
+
+#[test]
+fn grapheme_handling() -> Result {
+  Test::new()?
+    .markdown(
+      r#"
+      Hello, 世界! 👋
+
+      ```present echo "🚀 Grapheme test: é, 世界, 👨‍👩‍👧‍👦"
+      ```
+
+      Grapheme cluster: 👨‍👩‍👧‍👦
+      "#,
+    )
+    .expected_status(0)
+    .expected_stdout(
+      r#"
+      Hello, 世界! 👋
+
+      ```present echo "🚀 Grapheme test: é, 世界, 👨‍👩‍👧‍👦"
+      🚀 Grapheme test: é, 世界, 👨‍👩‍👧‍👦
+      ```
+
+      Grapheme cluster: 👨‍👩‍👧‍👦
+      "#,
+    )
+    .run()
+}

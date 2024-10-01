@@ -23,6 +23,7 @@ mod common;
 mod diff;
 mod error;
 mod file;
+mod grapheme;
 mod lexer;
 mod parser;
 mod position;
@@ -34,8 +35,14 @@ pub use crate::{diff::Diff, error::Error, file::File};
 
 // Public only to crate
 pub(crate) use crate::{
-  codeblock::Codeblock, command::Command, lexer::Lexer, parser::Parser,
-  position::Position, prompt::prompt, rope_ext::RopeExt,
+  codeblock::Codeblock,
+  command::Command,
+  grapheme::{byte_index_to_grapheme_index, grapheme_index_to_byte_index},
+  lexer::Lexer,
+  parser::Parser,
+  position::Position,
+  prompt::prompt,
+  rope_ext::RopeExt,
 };
 
 /// Present's internal result type

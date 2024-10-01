@@ -7,14 +7,18 @@ pub(crate) trait RopeExt {
 
 impl RopeExt for Rope {
   fn apply(&mut self, diff: Diff) {
-    self.remove(diff.range.clone());
-    self.insert(diff.range.start, &diff.content);
+    let start = self.byte_to_char(diff.range.start);
+    let end = self.byte_to_char(diff.range.end);
+    self.remove(start..end);
+    self.insert(start, &diff.content);
   }
 
   fn simulate(&self, diff: Diff) -> Rope {
     let mut clone = self.clone();
-    clone.remove(diff.range.clone());
-    clone.insert(diff.range.start, &diff.content);
+    let start = clone.byte_to_char(diff.range.start);
+    let end = clone.byte_to_char(diff.range.end);
+    clone.remove(start..end);
+    clone.insert(start, &diff.content);
     clone
   }
 }

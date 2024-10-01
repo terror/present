@@ -10,13 +10,20 @@ pub struct Diff {
 }
 
 impl Diff {
+  /// Adjusts the diff's range by the given offset.
+  ///
+  /// This method modifies the start and end points of the diff's range
+  /// based on the provided offset. It handles both positive and negative
+  /// offsets, using saturating arithmetic to prevent underflow or overflow.
   pub(crate) fn offset(&mut self, offset: isize) {
-    if offset < 0 {
-      self.range.start = self.range.start.saturating_sub(offset.unsigned_abs());
-      self.range.end = self.range.end.saturating_sub(offset.unsigned_abs());
+    if offset >= 0 {
+      let offset = offset as usize;
+      self.range.start = self.range.start.saturating_add(offset);
+      self.range.end = self.range.end.saturating_add(offset);
     } else {
-      self.range.start += offset as usize;
-      self.range.end += offset as usize;
+      let abs_offset = offset.unsigned_abs();
+      self.range.start = self.range.start.saturating_sub(abs_offset);
+      self.range.end = self.range.end.saturating_sub(abs_offset);
     }
   }
 
@@ -71,6 +78,25 @@ mod tests {
   fn offset_negative_overflow() {
     let mut diff = diff();
     diff.offset(-10);
+    assert_eq!(diff.range, 0..0);
+  }
+
+  #[test]
+  fn offset_positive_large() {
+    let mut diff = diff();
+
+    diff.offset(isize::MAX);
+
+    assert_eq!(
+      diff.range,
+      (1 + isize::MAX as usize)..(4 + isize::MAX as usize)
+    );
+  }
+
+  #[test]
+  fn offset_negative_large() {
+    let mut diff = diff();
+    diff.offset(isize::MIN);
     assert_eq!(diff.range, 0..0);
   }
 }

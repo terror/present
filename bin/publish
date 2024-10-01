@@ -5,7 +5,9 @@ set -euo pipefail
 rm -rf tmp/release
 
 git clone https://github.com/terror/present.git tmp/release
+
 VERSION=$(sed -En 's/version[[:space:]]*=[[:space:]]*"([^"]+)"/\1/p' Cargo.toml | head -1)
+echo "Releasing $VERSION..."
 cd tmp/release
 
 if git rev-parse "$VERSION" >/dev/null 2>&1; then
@@ -16,5 +18,6 @@ else
 fi
 
 cargo publish
+
 cd ../..
 rm -rf tmp/release

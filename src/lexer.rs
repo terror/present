@@ -64,7 +64,7 @@ impl<'a> Lexer<'a> {
     let mut result = String::new();
     let mut escaped = false;
 
-    while let Some(ch) = chars.next() {
+    for ch in chars.by_ref() {
       match ch {
         _ if escaped => {
           match ch {

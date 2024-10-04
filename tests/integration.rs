@@ -533,7 +533,7 @@ fn inline_unmatched_delimiter() -> Result {
     .expected_status(1)
     .expected_stderr(
       "
-      error: Lex Error: Unmatched delimeter
+      error: Lex Error: Unmatched delimiter
       ",
     )
     .run()
@@ -608,6 +608,89 @@ fn grapheme_handling() -> Result {
       ```
 
       Grapheme cluster: 👨‍👩‍👧‍👦
+      "#,
+    )
+    .run()
+}
+
+#[test]
+fn large_output_handling() -> Result {
+  Test::new()?
+    .markdown(
+      r#"
+      ```present python -c "print('Large ' * 1000)"
+      ```
+      "#,
+    )
+    .expected_status(0)
+    .expected_stdout(&format!(
+      r#"
+      ```present python -c "print('Large ' * 1000)"
+      {}
+      ```
+      "#,
+      "Large ".repeat(1000)
+    ))
+    .run()
+}
+
+#[test]
+fn escaping_special_characters() -> Result {
+  Test::new()?
+    .markdown(
+      r#"
+      ```present echo "Special chars: && || > < | ; \" ' \\"
+      ```
+      "#,
+    )
+    .expected_status(0)
+    .expected_stdout(
+      r#"
+      ```present echo "Special chars: && || > < | ; \" ' \\"
+      Special chars: && || > < | ; " ' \
+      ```
+      "#,
+    )
+    .run()
+}
+
+#[test]
+fn complex_shell_pipeline() -> Result {
+  Test::new()?
+  .markdown(
+    r#"
+    ```present bash -c "echo 'hello world' | tr ' ' '\n' | sort | uniq -c | sort -nr | sed 's/^[[:space:]]*//' "
+    ```
+    "#,
+  )
+  .expected_status(0)
+  .expected_stdout(
+    r#"
+    ```present bash -c "echo 'hello world' | tr ' ' '\n' | sort | uniq -c | sort -nr | sed 's/^[[:space:]]*//' "
+    1 world
+    1 hello
+    ```
+    "#,
+  )
+  .run()
+}
+
+#[test]
+fn unicode_normalization() -> Result {
+  Test::new()?
+    .markdown(
+      r#"
+      ```present bash -c "echo \"é\" | xxd -p && echo \"é\" | xxd -p"
+      ```
+      "#,
+    )
+    .expected_status(0)
+    .expected_stdout(
+      r#"
+      ```present bash -c "echo \"é\" | xxd -p && echo \"é\" | xxd -p"
+      c3a90a
+      65cc810a
+      ```
       "#,
     )
     .run()

@@ -659,16 +659,16 @@ fn complex_shell_pipeline() -> Result {
   Test::new()?
   .markdown(
     r#"
-    ```present bash -c "echo 'hello world' | tr ' ' '\n' | sort | uniq -c | sort -nr"
+    ```present bash -c "echo 'hello world' | tr ' ' '\n' | sort | uniq -c | sort -nr | sed 's/^[[:space:]]*//' "
     ```
     "#,
   )
   .expected_status(0)
   .expected_stdout(
     r#"
-    ```present bash -c "echo 'hello world' | tr ' ' '\n' | sort | uniq -c | sort -nr"
-       1 world
-       1 hello
+    ```present bash -c "echo 'hello world' | tr ' ' '\n' | sort | uniq -c | sort -nr | sed 's/^[[:space:]]*//' "
+    1 world
+    1 hello
     ```
     "#,
   )

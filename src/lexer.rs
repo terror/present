@@ -16,61 +16,78 @@ impl<'a> Lexer<'a> {
 
   fn tokenize(&self) -> Result<Vec<String>> {
     let mut tokens = Vec::new();
-
     let mut chars = self.src.chars().peekable();
+
+    let mut current_token = String::new();
 
     while let Some(ch) = chars.next() {
       match ch {
         '\'' | '"' => {
-          let mut group = String::new();
-
-          chars
-            .clone()
-            .collect::<Vec<char>>()
-            .iter()
-            .find(|next| **next == ch)
-            .ok_or(Error::LexError {
-              message: "Unmatched delimeter".into(),
-            })?;
-
-          for next in chars.by_ref() {
-            match next {
-              next if next == ch => break,
-              _ => group.push(next),
-            }
+          if !current_token.is_empty() {
+            tokens.push(current_token);
+            current_token = String::new();
           }
 
-          chars.next();
+          let quoted_string = self.parse_quoted_string(ch, &mut chars)?;
 
-          tokens.push(group);
+          tokens.push(quoted_string);
+        }
+        ' ' | '\t' => {
+          if !current_token.is_empty() {
+            tokens.push(current_token);
+            current_token = String::new();
+          }
+        }
+        '\\' => {
+          if let Some(next_ch) = chars.next() {
+            current_token.push(next_ch);
+          }
         }
         _ => {
-          let mut group = String::new();
-
-          group.push(ch);
-
-          while let Some(next) = chars.peek() {
-            match next {
-              '\'' | '"' => break,
-              _ => {
-                group.push(*next);
-                chars.next();
-              }
-            }
-          }
-
-          tokens.extend(
-            group
-              .trim()
-              .split(' ')
-              .map(|argument| argument.to_owned())
-              .collect::<Vec<String>>(),
-          );
+          current_token.push(ch);
         }
       }
     }
 
+    if !current_token.is_empty() {
+      tokens.push(current_token);
+    }
+
     Ok(tokens)
+  }
+
+  fn parse_quoted_string(
+    &self,
+    quote: char,
+    chars: &mut std::iter::Peekable<std::str::Chars>,
+  ) -> Result<String> {
+    let mut result = String::new();
+    let mut escaped = false;
+
+    while let Some(ch) = chars.next() {
+      match ch {
+        _ if escaped => {
+          match ch {
+            '\\' | '\'' | '"' => result.push(ch),
+            'n' => result.push('\n'),
+            't' => result.push('\t'),
+            'r' => result.push('\r'),
+            _ => {
+              result.push('\\');
+              result.push(ch);
+            }
+          }
+          escaped = false;
+        }
+        '\\' => escaped = true,
+        ch if ch == quote => return Ok(result),
+        _ => result.push(ch),
+      }
+    }
+
+    Err(Error::LexError {
+      message: "Unmatched delimiter".into(),
+    })
   }
 }
 
@@ -114,5 +131,37 @@ mod tests {
   #[test]
   fn unmatched_delimiter() {
     assert!(lex("-c 'echo foo").is_err());
+  }
+
+  #[test]
+  fn escaped_quotes() {
+    assert_eq!(
+      lex(r#"echo "Hello \"World\"""#).unwrap(),
+      vec!["echo", r#"Hello "World""#]
+    );
+  }
+
+  #[test]
+  fn nested_quotes() {
+    assert_eq!(
+      lex(r#"echo "outer 'inner' outer""#).unwrap(),
+      vec!["echo", r#"outer 'inner' outer"#]
+    );
+  }
+
+  #[test]
+  fn complex_command() {
+    assert_eq!(
+      lex(r#"bash -c "echo 'hello world' | tr ' ' '\n' | sort | uniq -c | sort -nr""#).unwrap(),
+      vec!["bash", "-c", "echo 'hello world' | tr ' ' '\n' | sort | uniq -c | sort -nr"]
+    );
+  }
+
+  #[test]
+  fn escaped_characters() {
+    assert_eq!(
+      lex(r#"echo "Hello\nWorld\t\"\\" 'Single\'Quote'"#).unwrap(),
+      vec!["echo", "Hello\nWorld\t\"\\", "Single'Quote"]
+    );
   }
 }

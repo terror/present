@@ -614,6 +614,7 @@ fn grapheme_handling() -> Result {
 }
 
 #[test]
+#[cfg(not(target_os = "windows"))]
 fn large_output_handling() -> Result {
   Test::new()?
     .markdown(

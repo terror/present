@@ -3,6 +3,7 @@
 [![CI](https://github.com/terror/present/actions/workflows/ci.yaml/badge.svg)](https://github.com/terror/present/actions/workflows/ci.yaml)
 [![crates.io](https://shields.io/crates/v/present.svg)](https://crates.io/crates/present)
 [![docs.rs](https://img.shields.io/docsrs/present)](https://docs.rs/present)
+[![dependency status](https://deps.rs/repo/github/terror/present/status.svg)](https://deps.rs/repo/github/terror/present)
 
 **present** is a tool that lets you interpolate the standard output of arbitrary
 scripts that get interpreted by the shell into your markdown documents.
@@ -11,11 +12,15 @@ Its aim is to provide a nice way to automatically update sections of your
 markdown documents that might be the standard output of a command, such as
 command-line utility help outputs or benchmarks.
 
-### Demo
+## Demo
 
 Below is a short demo showcasing the main functionality of the program.
 
-[![asciicast](https://asciinema.org/a/6AO2ME0abbvn93dr4Dh4lenM0.svg)](https://asciinema.org/a/6AO2ME0abbvn93dr4Dh4lenM0)
+[![asciicast](https://asciinema.org/a/499682.svg)](https://asciinema.org/a/499682)
+
+## Usage
+
+You can use `present` from the command-line interface (CLI) or library.
 
 ### CLI
 
@@ -25,6 +30,9 @@ You can install the `present` command-line utility with the rust package manager
 ```bash
 $ cargo install present
 ```
+
+In addition, pre-built binaries can be found on the
+[releases](https://github.com/terror/present/releases) page.
 
 Below is the standard output of `present --help`, interpolated by the `present`
 binary itself!
@@ -80,7 +88,7 @@ means that when running `cargo test`, the README gets automatically updated.
 
 You can read more about using the library on [docs.rs](https://docs.rs/present).
 
-### Examples
+## Examples
 
 Below are a few examples showcasing what kind of command result interpolations
 `present` is currently able to handle.
@@ -133,7 +141,7 @@ Below are a few examples showcasing what kind of command result interpolations
 </tr>
 </table>
 
-### Prior Art
+## Prior Art
 
 This project is loosely inspired by [`Cog`](https://github.com/nedbat/cog), the
 code generation tool. However, as mentioned above, this project's main target is

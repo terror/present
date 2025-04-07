@@ -12,11 +12,11 @@ keywords = ["command-line", "productivity", "utility", "markdown", "bash"]
 resolver = "2"
 
 [dependencies]
-clap = { version = "4.5.19", features = ["derive"] }
-console = "0.15.8"
+clap = { version = "4.5.35", features = ["derive"] }
+console = "0.15.11"
 pulldown-cmark = { version = "0.9.6", default-features = false, features = ["simd"] }
 ropey = "1.6.1"
-similar = "2.6.0"
+similar = "2.7.0"
 snafu = { version = "0.7.5", default-features = false, features = ["std"] }
 termimad = "0.20.6"
 unicode-segmentation = "1.12.0"

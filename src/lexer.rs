@@ -11,7 +11,7 @@ impl<'a> Lexer<'a> {
   }
 
   pub(crate) fn lex(src: &'a str) -> Result<Vec<String>> {
-    Lexer::new(src).tokenize()
+    Lexer::new(&src.replace("\r\n", "\n")).tokenize()
   }
 
   fn tokenize(&self) -> Result<Vec<String>> {
@@ -32,7 +32,7 @@ impl<'a> Lexer<'a> {
 
           tokens.push(quoted_string);
         }
-        ' ' | '\t' => {
+        ' ' | '\t' | '\r' => {
           if !current_token.is_empty() {
             tokens.push(current_token);
             current_token = String::new();
@@ -53,7 +53,12 @@ impl<'a> Lexer<'a> {
       tokens.push(current_token);
     }
 
-    Ok(tokens)
+    let normalized_tokens = tokens
+      .into_iter()
+      .map(|token| token.replace("\r\n", "\n"))
+      .collect();
+
+    Ok(normalized_tokens)
   }
 
   fn parse_quoted_string(
@@ -80,7 +85,7 @@ impl<'a> Lexer<'a> {
           escaped = false;
         }
         '\\' => escaped = true,
-        ch if ch == quote => return Ok(result),
+        ch if ch == quote => return Ok(result.replace("\r\n", "\n")),
         _ => result.push(ch),
       }
     }
@@ -96,7 +101,7 @@ mod tests {
   use super::*;
 
   fn lex(src: &str) -> Result<Vec<String>> {
-    Lexer::new(src).tokenize()
+    Lexer::lex(src)
   }
 
   #[test]
@@ -162,6 +167,14 @@ mod tests {
     assert_eq!(
       lex(r#"echo "Hello\nWorld\t\"\\" 'Single\'Quote'"#).unwrap(),
       vec!["echo", "Hello\nWorld\t\"\\", "Single'Quote"]
+    );
+  }
+
+  #[test]
+  fn windows_line_endings() {
+    assert_eq!(
+      lex("echo \"hello\r\nworld\"").unwrap(),
+      vec!["echo", "hello\nworld"]
     );
   }
 }

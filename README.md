@@ -16,7 +16,7 @@ command-line utility help outputs or benchmarks.
 
 Below is a short demo showcasing the main functionality of the program.
 
-[![asciicast](https://asciinema.org/a/6AO2ME0abbvn93dr4Dh4lenM0.svg)](https://asciinema.org/a/6AO2ME0abbvn93dr4Dh4lenM0)
+[![asciicast](https://asciinema.org/a/499682.svg)](https://asciinema.org/a/499682)
 
 ## Usage
 

@@ -14,7 +14,11 @@ impl<'a> Parser<'a> {
   }
 
   pub(crate) fn parse(&self) -> Result<Vec<Codeblock>> {
-    let ranges = MarkdownParser::new(self.src)
+    let normalized_src = self.src.replace("\r\n", "\n");
+
+    let parser = MarkdownParser::new(&normalized_src);
+
+    let ranges = parser
       .into_offset_iter()
       .filter(|event| {
         matches!(

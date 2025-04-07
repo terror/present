@@ -13,15 +13,15 @@ impl Command {
     Ok(match &*command {
       [prefix, program, arguments @ ..] if prefix == PREFIX => Some(Self {
         program: program.to_string(),
-        arguments: Lexer::lex(&arguments.join(" "))?,
+        arguments: Lexer::lex(&arguments.join(" ").replace("\r\n", "\n"))?,
       }),
       _ => None,
     })
   }
 
   pub(crate) fn execute(&self) -> Result<String> {
-    let output = process::Command::new(self.program.clone())
-      .args(self.arguments.clone())
+    let output = process::Command::new(&self.program)
+      .args(&self.arguments)
       .output();
 
     if let Err(error) = output {

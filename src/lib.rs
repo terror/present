@@ -49,6 +49,7 @@ pub(crate) use crate::{
 pub type Result<T = (), E = Error> = std::result::Result<T, E>;
 
 // Test README
+#[cfg(not(target_os = "windows"))]
 #[doc = include_str!("../README.md")]
 #[cfg(doctest)]
 pub struct ReadmeDoctests;

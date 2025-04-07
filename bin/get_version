@@ -1,0 +1,5 @@
+#!/bin/bash
+
+version=$(grep -E 'version\s*=\s*"[^"]+"' Cargo.toml | sed '1!d')
+
+echo "${version}" | sed -E 's/[^"]+"([^"]+)"/present = "\1"/'

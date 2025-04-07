@@ -182,6 +182,7 @@ fn codeblock_end_with_superfluous_characters() -> Result {
 }
 
 #[test]
+#[cfg(not(target_os = "windows"))]
 fn invalid_command() -> Result {
   Test::new()?
     .markdown(
@@ -194,6 +195,25 @@ fn invalid_command() -> Result {
     .expected_stderr(
       "
       error: Program foobarbaz failed to execute with message: No such file or directory (os error 2)
+      ",
+    )
+    .run()
+}
+
+#[test]
+#[cfg(target_os = "windows")]
+fn invalid_command() -> Result {
+  Test::new()?
+    .markdown(
+      "
+      ```present foobarbaz
+      ```test
+      ",
+    )
+    .expected_status(1)
+    .expected_stderr(
+      "
+      error: Program foobarbaz failed to execute with message: program not found
       ",
     )
     .run()

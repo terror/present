@@ -1,8 +1,10 @@
 ## present
 
+[![release](https://img.shields.io/github/release/terror/present.svg?label=release&style=flat&labelColor=282c34&logo=github)](https://github.com/terror/present/releases/latest)
 [![CI](https://github.com/terror/present/actions/workflows/ci.yaml/badge.svg)](https://github.com/terror/present/actions/workflows/ci.yaml)
+[![codecov](https://codecov.io/gh/terror/present/graph/badge.svg?token=7CH4XDXO7Z)](https://codecov.io/gh/terror/present)
 [![crates.io](https://shields.io/crates/v/present.svg)](https://crates.io/crates/present)
-[![docs.rs](https://img.shields.io/docsrs/present)](https://docs.rs/present)
+[![downloads](https://img.shields.io/crates/d/present)](https://crates.io/crates/present)
 [![dependency status](https://deps.rs/repo/github/terror/present/status.svg)](https://deps.rs/repo/github/terror/present)
 
 **present** is a tool that lets you interpolate the standard output of arbitrary
@@ -82,9 +84,10 @@ fn main() {
 ```
 
 > The above snippet is tested with rustdoc. A really cool side effect of this,
-is that the test loads the README itself, and runs `present` over it. `present`
-is also used throughout the README (to get help-text and version numbers), which
-means that when running `cargo test`, the README gets automatically updated.
+> is that the test loads the README itself, and runs `present` over it.
+> `present` is also used throughout the README (to get help-text and version
+> numbers), which means that when running `cargo test`, the README gets
+> automatically updated.
 
 You can read more about using the library on [docs.rs](https://docs.rs/present).
 
@@ -100,22 +103,24 @@ Below are a few examples showcasing what kind of command result interpolations
 </td>
 <td>
 
-  ````ignore
-  foo
+````ignore
+foo
 
-  ```present echo bar
-  ```
-  ````
+```present echo bar
+```
+````
+
 </td>
 <td>
 
-  ````ignore
-  foo
+````ignore
+foo
 
-  ```present echo bar
-  bar
-  ```
-  ````
+```present echo bar
+bar
+```
+````
+
 </td>
 </tr>
 <td>
@@ -123,20 +128,22 @@ Below are a few examples showcasing what kind of command result interpolations
 </td>
 <td>
 
-  ````ignore
-  foo
+````ignore
+foo
 
-  ```present echo bar
-  ```
-  ````
+```present echo bar
+```
+````
+
 </td>
 <td>
 
-  ````ignore
-  foo
+```ignore
+foo
 
-  bar
-  ````
+bar
+```
+
 </td>
 </tr>
 </table>

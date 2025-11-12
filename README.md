@@ -84,9 +84,10 @@ fn main() {
 ```
 
 > The above snippet is tested with rustdoc. A really cool side effect of this,
-is that the test loads the README itself, and runs `present` over it. `present`
-is also used throughout the README (to get help-text and version numbers), which
-means that when running `cargo test`, the README gets automatically updated.
+> is that the test loads the README itself, and runs `present` over it.
+> `present` is also used throughout the README (to get help-text and version
+> numbers), which means that when running `cargo test`, the README gets
+> automatically updated.
 
 You can read more about using the library on [docs.rs](https://docs.rs/present).
 
@@ -102,22 +103,24 @@ Below are a few examples showcasing what kind of command result interpolations
 </td>
 <td>
 
-  ````ignore
-  foo
+````ignore
+foo
 
-  ```present echo bar
-  ```
-  ````
+```present echo bar
+```
+````
+
 </td>
 <td>
 
-  ````ignore
-  foo
+````ignore
+foo
 
-  ```present echo bar
-  bar
-  ```
-  ````
+```present echo bar
+bar
+```
+````
+
 </td>
 </tr>
 <td>
@@ -125,20 +128,22 @@ Below are a few examples showcasing what kind of command result interpolations
 </td>
 <td>
 
-  ````ignore
-  foo
+````ignore
+foo
 
-  ```present echo bar
-  ```
-  ````
+```present echo bar
+```
+````
+
 </td>
 <td>
 
-  ````ignore
-  foo
+```ignore
+foo
 
-  bar
-  ````
+bar
+```
+
 </td>
 </tr>
 </table>

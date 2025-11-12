@@ -1,8 +1,10 @@
 ## present
 
+[![release](https://img.shields.io/github/release/terror/present.svg?label=release&style=flat&labelColor=282c34&logo=github)](https://github.com/terror/present/releases/latest)
 [![CI](https://github.com/terror/present/actions/workflows/ci.yaml/badge.svg)](https://github.com/terror/present/actions/workflows/ci.yaml)
+[![codecov](https://codecov.io/gh/terror/present/graph/badge.svg?token=7CH4XDXO7Z)](https://codecov.io/gh/terror/present)
 [![crates.io](https://shields.io/crates/v/present.svg)](https://crates.io/crates/present)
-[![docs.rs](https://img.shields.io/docsrs/present)](https://docs.rs/present)
+[![downloads](https://img.shields.io/crates/d/present)](https://crates.io/crates/present)
 [![dependency status](https://deps.rs/repo/github/terror/present/status.svg)](https://deps.rs/repo/github/terror/present)
 
 **present** is a tool that lets you interpolate the standard output of arbitrary

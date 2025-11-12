@@ -20,21 +20,53 @@ Below is a short demo showcasing the main functionality of the program.
 
 [![asciicast](https://asciinema.org/a/499682.svg)](https://asciinema.org/a/499682)
 
+## Installation
+
+`present` should run on any system, including Linux, MacOS, and the BSDs.
+
+The easiest way to install it is by using [cargo](https://doc.rust-lang.org/cargo/index.html),
+the Rust package manager:
+
+```bash
+cargo install present
+```
+
+Otherwise, see below for the complete package list:
+
+#### Cross-platform
+
+<table>
+  <thead>
+    <tr>
+      <th>Package Manager</th>
+      <th>Package</th>
+      <th>Command</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><a href=https://www.rust-lang.org>Cargo</a></td>
+      <td><a href=https://crates.io/crates/present>present</a></td>
+      <td><code>cargo install present</code></td>
+    </tr>
+    <tr>
+      <td><a href=https://brew.sh>Homebrew</a></td>
+      <td><a href=https://github.com/terror/homebrew-tap>terror/tap/present</a></td>
+      <td><code>brew install terror/tap/present</code></td>
+    </tr>
+  </tbody>
+</table>
+
+### Pre-built binaries
+
+Pre-built binaries for Linux, MacOS, and Windows can be found on [the releases
+page](https://github.com/terror/present/releases).
+
 ## Usage
 
 You can use `present` from the command-line interface (CLI) or library.
 
 ### CLI
-
-You can install the `present` command-line utility with the rust package manager
-[cargo](https://github.com/rust-lang/cargo):
-
-```bash
-$ cargo install present
-```
-
-In addition, pre-built binaries can be found on the
-[releases](https://github.com/terror/present/releases) page.
 
 Below is the standard output of `present --help`, interpolated by the `present`
 binary itself!

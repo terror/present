@@ -71,10 +71,13 @@ impl File {
   ///
   /// The [`Diff`]s are returned as results. If the command fails, the item will
   /// be of the `Err` kind.
-  pub fn diffs(&self) -> impl Iterator<Item = Result<Diff>> + '_ {
-    self.codeblocks.iter().map(|codeblock| {
+  pub fn diffs(
+    &self,
+    verbose: bool,
+  ) -> impl Iterator<Item = Result<Diff>> + '_ {
+    self.codeblocks.iter().map(move |codeblock| {
       Ok(Diff {
-        content: codeblock.command.execute()?,
+        content: codeblock.command.execute(verbose)?,
         range: match self.remove {
           // Replace the entire codeblock with `stdout`
           true => {
@@ -93,10 +96,10 @@ impl File {
   ///
   /// If [`interactive`](File::interactive) is set to `true`, the user will be
   /// asked if they want to apply the change for each diff.
-  pub fn present(&mut self) -> Result {
+  pub fn present(&mut self, verbose: bool) -> Result {
     let mut offset: isize = 0;
 
-    let diffs = self.diffs().collect::<Result<Vec<Diff>>>()?;
+    let diffs = self.diffs(verbose).collect::<Result<Vec<Diff>>>()?;
 
     for mut diff in diffs {
       let prev = self.content.len_bytes();

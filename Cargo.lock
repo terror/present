@@ -313,9 +313,9 @@ dependencies = [
 
 [[package]]
 name = "executable-path"
-version = "1.0.0"
+version = "1.0.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "3ebc5a6d89e3c90b84e8f33c8737933dda8f1c106b5415900b38b9d433841478"
+checksum = "ed24d6e921ad38aab6fd62771e8efb75ace61383312a663bcfcf268033d15d8b"
 
 [[package]]
 name = "fuchsia-cprng"

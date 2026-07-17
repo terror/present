@@ -19,7 +19,7 @@ impl Command {
     })
   }
 
-  pub(crate) fn execute(&self) -> Result<String> {
+  pub(crate) fn execute(&self, verbose: bool) -> Result<String> {
     let output = process::Command::new(&self.program)
       .args(&self.arguments)
       .output();
@@ -40,6 +40,12 @@ impl Command {
       });
     }
 
-    Ok(String::from_utf8(output.stdout)?)
+    let stdout_str = String::from_utf8(output.stdout)?;
+    if verbose {
+      println!("> {} {}", &self.program, self.arguments.join(" "));
+      println!("{}", &stdout_str);
+    }
+
+    Ok(stdout_str)
   }
 }

@@ -17,6 +17,8 @@ pub(crate) struct Arguments {
   pub(crate) pretty: bool,
   #[clap(long, help = "Remove commands within markdown documents.")]
   pub(crate) remove: bool,
+  #[clap(short, long, help = "Show output of commands being executed.")]
+  pub(crate) verbose: bool,
 }
 
 impl Arguments {
@@ -28,7 +30,7 @@ impl Arguments {
           .remove(self.remove)
           .interactive(self.interactive);
 
-        file.present()?;
+        file.present(self.verbose)?;
 
         match self.in_place {
           true => file.save()?,

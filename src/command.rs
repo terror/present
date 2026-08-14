@@ -20,7 +20,22 @@ impl Command {
   }
 
   pub(crate) fn execute(&self) -> Result<String> {
-    let output = process::Command::new(&self.program)
+    #[cfg(target_os = "windows")]
+    let program = std::env::var_os("PATH")
+      .into_iter()
+      .flat_map(|path| std::env::split_paths(&path).collect::<Vec<_>>())
+      .flat_map(|directory| {
+        ["", ".com", ".exe", ".bat", ".cmd"].map(move |extension| {
+          directory.join(format!("{}{extension}", self.program))
+        })
+      })
+      .find(|path| path.is_file())
+      .unwrap_or_else(|| self.program.clone().into());
+
+    #[cfg(not(target_os = "windows"))]
+    let program = &self.program;
+
+    let output = process::Command::new(program)
       .args(&self.arguments)
       .output();
 

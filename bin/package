@@ -33,6 +33,7 @@ mkdir dist
 
 cp -r \
   "$EXECUTABLE" \
+  CHANGELOG.md \
   Cargo.lock \
   Cargo.toml \
   LICENSE \

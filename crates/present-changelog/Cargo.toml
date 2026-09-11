@@ -1,0 +1,8 @@
+[package]
+name = "present-changelog"
+version = "0.0.0"
+edition = "2021"
+publish = false
+
+[dependencies]
+regex = "1.13.1"

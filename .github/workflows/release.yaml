@@ -101,12 +101,22 @@ jobs:
       run: ./bin/package
       shell: bash
 
+    - name: Extract Release Notes
+      if: ${{ startsWith(github.ref, 'refs/tags/') }}
+      run: |
+        awk -v version="${{ github.ref_name }}" '
+          index($0, "## [" version "](") == 1 { found=1; next }
+          found && /^## / { exit }
+          found { print }
+        ' CHANGELOG.md > RELEASE_NOTES.md
+
     - name: Publish Archive
       uses: softprops/action-gh-release@v2.2.1
       if: ${{ startsWith(github.ref, 'refs/tags/') }}
       with:
         draft: false
         files: ${{ steps.package.outputs.archive }}
+        body_path: RELEASE_NOTES.md
         prerelease: ${{ needs.prerelease.outputs.value }}
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

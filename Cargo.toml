@@ -11,6 +11,9 @@ categories = ["command-line-utilities"]
 keywords = ["command-line", "productivity", "utility", "markdown", "bash"]
 resolver = "2"
 
+[workspace]
+members = [".", "crates/*"]
+
 [dependencies]
 clap = { version = "4.5.51", features = ["derive"] }
 console = "0.16.1"

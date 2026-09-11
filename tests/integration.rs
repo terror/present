@@ -142,6 +142,74 @@ fn simple() -> Result {
 }
 
 #[test]
+#[cfg(target_os = "windows")]
+fn shell_script() -> Result {
+  let test = Test::new()?
+    .markdown("```present ./foo 'bar baz'\n```\n")
+    .expected_stdout("```present ./foo 'bar baz'\nbar baz\n```\n");
+
+  fs::write(
+    test.tempdir.path().join("foo"),
+    "#!/bin/bash\nprintf '%s\\n' \"$1\"\n",
+  )?;
+
+  test.run()
+}
+
+#[test]
+fn crlf_before_codeblock() -> Result {
+  Test::new()?
+    .markdown("foo\r\n\r\n```present echo bar\r\nbaz\r\n```\r\n\r\nqux\r\n")
+    .expected_stdout(
+      "foo\r\n\r\n```present echo bar\r\nbar\n```\r\n\r\nqux\r\n",
+    )
+    .run()
+}
+
+#[test]
+fn opening_fence_at_eof() -> Result {
+  #[track_caller]
+  fn case(remove: bool, expected: &str) -> Result {
+    let test = Test::new()?
+      .markdown("```present echo foo")
+      .expected_stdout(expected);
+
+    let test = if remove {
+      test.argument("--remove")
+    } else {
+      test
+    };
+
+    test.run()
+  }
+
+  case(false, "```present echo foo\nfoo\n")?;
+  case(true, "foo\n")
+}
+
+#[test]
+fn unclosed_codeblock_with_trailing_whitespace() -> Result {
+  #[track_caller]
+  fn case(src: &str) -> Result {
+    Test::new()?
+      .markdown(src)
+      .expected_stdout("  ```present echo foo\nfoo\n")
+      .run()
+  }
+
+  case("  ```present echo foo\nbar\n  ")?;
+  case("  ```present echo foo\n  ")
+}
+
+#[test]
+fn unrelated_tilde_fence() -> Result {
+  Test::new()?
+    .markdown("~~~foo\nbar\n~~~\n\n```present echo baz\n```\n")
+    .expected_stdout("~~~foo\nbar\n~~~\n\n```present echo baz\nbaz\n```\n")
+    .run()
+}
+
+#[test]
 fn arbitrary_fence_length() -> Result {
   Test::new()?
     .markdown(
@@ -162,7 +230,7 @@ fn arbitrary_fence_length() -> Result {
 }
 
 #[test]
-fn codeblock_end_with_superfluous_characters() -> Result {
+fn codeblock_with_invalid_closing_fence() -> Result {
   Test::new()?
     .markdown(
       "
@@ -175,7 +243,6 @@ fn codeblock_end_with_superfluous_characters() -> Result {
       "
       ```present echo foo
       foo
-      ```test
       ",
     )
     .run()
@@ -343,6 +410,15 @@ fn remove_command() -> Result {
       foo
       ",
     )
+    .run()
+}
+
+#[test]
+fn remove_command_at_eof() -> Result {
+  Test::new()?
+    .markdown("foo\n\n```present echo bar\nbaz\n```")
+    .argument("--remove")
+    .expected_stdout("foo\n\nbar\n")
     .run()
 }
 

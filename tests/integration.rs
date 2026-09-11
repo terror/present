@@ -142,6 +142,21 @@ fn simple() -> Result {
 }
 
 #[test]
+#[cfg(target_os = "windows")]
+fn shell_script() -> Result {
+  let test = Test::new()?
+    .markdown("```present ./foo 'bar baz'\n```\n")
+    .expected_stdout("```present ./foo 'bar baz'\nbar baz\n```\n");
+
+  fs::write(
+    test.tempdir.path().join("foo"),
+    "#!/bin/bash\nprintf '%s\\n' \"$1\"\n",
+  )?;
+
+  test.run()
+}
+
+#[test]
 fn crlf_before_codeblock() -> Result {
   Test::new()?
     .markdown("foo\r\n\r\n```present echo bar\r\nbaz\r\n```\r\n\r\nqux\r\n")

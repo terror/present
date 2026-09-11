@@ -33,14 +33,9 @@ impl<'a> Parser<'a> {
           (info, range.end - body.len())
         });
 
-      let arguments = info
-        .trim_start_matches(fence)
-        .trim_end_matches('\r')
-        .split(' ')
-        .map(str::to_owned)
-        .collect();
+      let command = info.trim_start_matches(fence).trim_end_matches('\r');
 
-      let Some(command) = Command::from(arguments)? else {
+      let Some(command) = Command::from(command)? else {
         continue;
       };
 
@@ -88,14 +83,19 @@ mod tests {
 
   #[test]
   fn ignore_unrelated_codeblocks() {
-    assert_eq!(
-      Parser::new(
-        "foo\n\n~~~```present echo foo\nbar\n~~~\n\n```bar\nbaz\n```\n\n    present echo foo\n",
-      )
-      .parse()
-      .unwrap(),
-      Vec::new(),
+    #[track_caller]
+    fn case(src: &str) {
+      assert_eq!(Parser::new(src).parse().unwrap(), Vec::new());
+    }
+
+    case(
+      "foo\n\n~~~```present echo foo\nbar\n~~~\n\n```bar\nbaz\n```\n\n    present echo foo\n",
     );
+    case("```foo 'bar\n```\n");
+    case("```present-foo 'bar\n```\n");
+    case("```present' bar\n```\n");
+    case("```present\n```\n");
+    case("```present \t \n```\n");
   }
 
   #[test]
@@ -110,13 +110,9 @@ mod tests {
       assert_eq!(
         Parser::new(src).parse().unwrap(),
         vec![Codeblock {
-          command: Command::from(vec![
-            "present".into(),
-            "echo".into(),
-            argument.into(),
-          ])
-          .unwrap()
-          .unwrap(),
+          command: Command::from(&format!("present echo {argument}"))
+            .unwrap()
+            .unwrap(),
           position: Position { block, body },
         }],
       );

@@ -18,39 +18,33 @@ impl<'a> Lexer<'a> {
     let mut tokens = Vec::new();
     let mut chars = self.src.chars().peekable();
 
-    let mut current_token = String::new();
+    let mut current_token = None;
 
     while let Some(ch) = chars.next() {
       match ch {
         '\'' | '"' => {
-          if !current_token.is_empty() {
-            tokens.push(current_token);
-            current_token = String::new();
-          }
-
-          let quoted_string = self.parse_quoted_string(ch, &mut chars)?;
-
-          tokens.push(quoted_string);
+          current_token
+            .get_or_insert_with(String::new)
+            .push_str(&self.parse_quoted_string(ch, &mut chars)?);
         }
         ' ' | '\t' | '\r' => {
-          if !current_token.is_empty() {
-            tokens.push(current_token);
-            current_token = String::new();
+          if let Some(token) = current_token.take() {
+            tokens.push(token);
           }
         }
         '\\' => {
           if let Some(next_ch) = chars.next() {
-            current_token.push(next_ch);
+            current_token.get_or_insert_with(String::new).push(next_ch);
           }
         }
         _ => {
-          current_token.push(ch);
+          current_token.get_or_insert_with(String::new).push(ch);
         }
       }
     }
 
-    if !current_token.is_empty() {
-      tokens.push(current_token);
+    if let Some(token) = current_token {
+      tokens.push(token);
     }
 
     let normalized_tokens = tokens
@@ -129,6 +123,36 @@ mod tests {
   }
 
   #[test]
+  fn adjacent_fragments() {
+    #[track_caller]
+    fn case(src: &str, expected: &[&str]) {
+      assert_eq!(lex(src).unwrap(), expected);
+    }
+
+    case(r#"foo"bar"'baz'"#, &["foobarbaz"]);
+
+    case(
+      r#""foo"bar 'foo'"bar" baz"qux""#,
+      &["foobar", "foobar", "bazqux"],
+    );
+
+    case(r#"foo" bar "baz"#, &["foo bar baz"]);
+  }
+
+  #[test]
+  fn empty_arguments() {
+    #[track_caller]
+    fn case(src: &str, expected: &[&str]) {
+      assert_eq!(lex(src).unwrap(), expected);
+    }
+
+    case(r#"'' """#, &["", ""]);
+    case(r#"''"" ""''"#, &["", ""]);
+    case(r#"foo'' ''foo foo""bar"#, &["foo", "foo", "foobar"]);
+    case(" \t\r ", &[]);
+  }
+
+  #[test]
   fn ignore_empty() {
     assert_eq!(lex("a     'bc'").unwrap(), vec!["a", "bc"]);
   }
@@ -164,17 +188,40 @@ mod tests {
 
   #[test]
   fn escaped_characters() {
-    assert_eq!(
-      lex(r#"echo "Hello\nWorld\t\"\\" 'Single\'Quote'"#).unwrap(),
-      vec!["echo", "Hello\nWorld\t\"\\", "Single'Quote"]
+    #[track_caller]
+    fn case(src: &str, expected: &[&str]) {
+      assert_eq!(lex(src).unwrap(), expected);
+    }
+
+    case(
+      r#"echo "Hello\nWorld\t\"\\" 'Single\'Quote'"#,
+      &["echo", "Hello\nWorld\t\"\\", "Single'Quote"],
     );
+
+    case(
+      r#"'foo\n\t\r\q\\\'\"bar' "foo\n\t\r\q\\\'\"bar""#,
+      &["foo\n\t\r\\q\\'\"bar", "foo\n\t\r\\q\\'\"bar"],
+    );
+
+    case(
+      r#"foo\ bar \n\t\r\q\\\'\" foo\"#,
+      &["foo bar", "ntrq\\'\"", "foo"],
+    );
+
+    case("\\", &[]);
+    case(r#"''\"#, &[""]);
   }
 
   #[test]
   fn windows_line_endings() {
-    assert_eq!(
-      lex("echo \"hello\r\nworld\"").unwrap(),
-      vec!["echo", "hello\nworld"]
-    );
+    #[track_caller]
+    fn case(src: &str) {
+      assert_eq!(lex(src).unwrap(), ["foo\nbar"]);
+    }
+
+    case("\"foo\r\nbar\"");
+    case("foo\r\nbar");
+    case(r#"'foo\r\nbar'"#);
+    case(r#"'foo\r''\nbar'"#);
   }
 }

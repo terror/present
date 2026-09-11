@@ -142,6 +142,23 @@ fn simple() -> Result {
 }
 
 #[test]
+fn tokenize_command() -> Result {
+  #[track_caller]
+  fn case(command: &str, expected: &str) -> Result {
+    Test::new()?
+      .markdown(&format!("```{command}\n```\n"))
+      .expected_stdout(&format!("```{command}\n{expected}\n```\n"))
+      .run()
+  }
+
+  case("present   echo foo", "foo")?;
+  case("present\techo\tfoo", "foo")?;
+  case(" \tpresent echo foo", "foo")?;
+  case(r#"present "echo" foo"#, "foo")?;
+  case(r#"present 'ec'ho foo"bar" '' """#, "foobar  ")
+}
+
+#[test]
 #[cfg(target_os = "windows")]
 fn shell_script() -> Result {
   let test = Test::new()?
@@ -619,20 +636,19 @@ fn inline_script_complex() -> Result {
 
 #[test]
 fn inline_unmatched_delimiter() -> Result {
-  Test::new()?
-    .markdown(
-      "
-      ```present bash -c 'echo foo
-      ```
-      ",
-    )
-    .expected_status(1)
-    .expected_stderr(
-      "
-      error: Lex Error: Unmatched delimiter
-      ",
-    )
-    .run()
+  #[track_caller]
+  fn case(command: &str) -> Result {
+    Test::new()?
+      .markdown(&format!("```present {command}\n```\n"))
+      .expected_status(1)
+      .expected_stderr("error: Lex Error: Unmatched delimiter\n")
+      .run()
+  }
+
+  case("bash -c 'echo foo")?;
+  case("'foo")?;
+  case("\"foo")?;
+  case("foo'bar")
 }
 
 #[test]

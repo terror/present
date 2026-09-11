@@ -121,13 +121,12 @@ checksum = "b05b61dc5112cbb17e4b6cd61790d9845d13888356391624cbe7e41efeac1e75"
 
 [[package]]
 name = "console"
-version = "0.16.1"
+version = "0.16.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "b430743a6eb14e9764d4260d4c0d8123087d504eeb9c48f2b2a5e810dd369df4"
+checksum = "d64e8af5551369d19cf50138de61f1c42074ab970f74e99be916646777f8fc87"
 dependencies = [
  "encode_unicode",
  "libc",
- "once_cell",
  "unicode-width 0.2.2",
  "windows-sys",
 ]
@@ -313,9 +312,9 @@ dependencies = [
 
 [[package]]
 name = "executable-path"
-version = "1.0.0"
+version = "1.0.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "3ebc5a6d89e3c90b84e8f33c8737933dda8f1c106b5415900b38b9d433841478"
+checksum = "ed24d6e921ad38aab6fd62771e8efb75ace61383312a663bcfcf268033d15d8b"
 
 [[package]]
 name = "fuchsia-cprng"
@@ -467,7 +466,6 @@ dependencies = [
  "snafu",
  "tempdir",
  "termimad",
- "unicode-segmentation",
  "unindent",
  "walkdir",
 ]

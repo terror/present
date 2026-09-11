@@ -566,6 +566,49 @@ fn opening_fence_at_eof() -> Result {
 }
 
 #[test]
+fn output_without_trailing_newline() -> Result {
+  #[track_caller]
+  fn case(markdown: &str, expected: &str, remove: bool) -> Result {
+    let tempdir = TempDir::new("test")?;
+
+    let path = tempdir.path().join("foo.md");
+
+    fs::write(&path, markdown)?;
+
+    for _ in 0..2 {
+      let mut file = present::File::new(path.clone())?.remove(remove);
+      file.present()?;
+      file.save()?;
+      assert_eq!(fs::read_to_string(&path)?, expected);
+    }
+
+    Ok(())
+  }
+
+  case(
+    "```present printf foo\n```\n\nbar\n",
+    "```present printf foo\nfoo\n```\n\nbar\n",
+    false,
+  )?;
+
+  case(
+    "```present printf ''\n```\n\nbar\n",
+    "```present printf ''\n```\n\nbar\n",
+    false,
+  )?;
+
+  case("```present printf foo\n```", "foo", true)?;
+
+  case(
+    "```present printf foo\n",
+    "```present printf foo\nfoo",
+    false,
+  )?;
+
+  case("```present printf foo", "```present printf foo\nfoo", false)
+}
+
+#[test]
 fn remove_command() -> Result {
   Test::new()?
     .markdown(

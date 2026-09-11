@@ -99,30 +99,6 @@ mod tests {
   }
 
   #[test]
-  fn tokenize_single() {
-    assert_eq!(
-      lex("-c 'for i in {1..10}; do echo $i; done'").unwrap(),
-      vec!["-c", "for i in {1..10}; do echo $i; done"]
-    );
-  }
-
-  #[test]
-  fn tokenize_multiple() {
-    assert_eq!(
-      lex("-c 'echo foo' 'echo bar'").unwrap(),
-      vec!["-c", "echo foo", "echo bar"]
-    );
-  }
-
-  #[test]
-  fn tokenize_mixed() {
-    assert_eq!(
-      lex("a 'b' c 'de' f g \"h i\"").unwrap(),
-      vec!["a", "b", "c", "de", "f", "g", "h i"]
-    );
-  }
-
-  #[test]
   fn adjacent_fragments() {
     #[track_caller]
     fn case(src: &str, expected: &[&str]) {
@@ -140,6 +116,14 @@ mod tests {
   }
 
   #[test]
+  fn complex_command() {
+    assert_eq!(
+      lex(r#"bash -c "echo 'hello world' | tr ' ' '\n' | sort | uniq -c | sort -nr""#).unwrap(),
+      vec!["bash", "-c", "echo 'hello world' | tr ' ' '\n' | sort | uniq -c | sort -nr"]
+    );
+  }
+
+  #[test]
   fn empty_arguments() {
     #[track_caller]
     fn case(src: &str, expected: &[&str]) {
@@ -150,40 +134,6 @@ mod tests {
     case(r#"''"" ""''"#, &["", ""]);
     case(r#"foo'' ''foo foo""bar"#, &["foo", "foo", "foobar"]);
     case(" \t\r ", &[]);
-  }
-
-  #[test]
-  fn ignore_empty() {
-    assert_eq!(lex("a     'bc'").unwrap(), vec!["a", "bc"]);
-  }
-
-  #[test]
-  fn unmatched_delimiter() {
-    assert!(lex("-c 'echo foo").is_err());
-  }
-
-  #[test]
-  fn escaped_quotes() {
-    assert_eq!(
-      lex(r#"echo "Hello \"World\"""#).unwrap(),
-      vec!["echo", r#"Hello "World""#]
-    );
-  }
-
-  #[test]
-  fn nested_quotes() {
-    assert_eq!(
-      lex(r#"echo "outer 'inner' outer""#).unwrap(),
-      vec!["echo", r#"outer 'inner' outer"#]
-    );
-  }
-
-  #[test]
-  fn complex_command() {
-    assert_eq!(
-      lex(r#"bash -c "echo 'hello world' | tr ' ' '\n' | sort | uniq -c | sort -nr""#).unwrap(),
-      vec!["bash", "-c", "echo 'hello world' | tr ' ' '\n' | sort | uniq -c | sort -nr"]
-    );
   }
 
   #[test]
@@ -210,6 +160,56 @@ mod tests {
 
     case("\\", &[]);
     case(r#"''\"#, &[""]);
+  }
+
+  #[test]
+  fn escaped_quotes() {
+    assert_eq!(
+      lex(r#"echo "Hello \"World\"""#).unwrap(),
+      vec!["echo", r#"Hello "World""#]
+    );
+  }
+
+  #[test]
+  fn ignore_empty() {
+    assert_eq!(lex("a     'bc'").unwrap(), vec!["a", "bc"]);
+  }
+
+  #[test]
+  fn nested_quotes() {
+    assert_eq!(
+      lex(r#"echo "outer 'inner' outer""#).unwrap(),
+      vec!["echo", r#"outer 'inner' outer"#]
+    );
+  }
+
+  #[test]
+  fn tokenize_mixed() {
+    assert_eq!(
+      lex("a 'b' c 'de' f g \"h i\"").unwrap(),
+      vec!["a", "b", "c", "de", "f", "g", "h i"]
+    );
+  }
+
+  #[test]
+  fn tokenize_multiple() {
+    assert_eq!(
+      lex("-c 'echo foo' 'echo bar'").unwrap(),
+      vec!["-c", "echo foo", "echo bar"]
+    );
+  }
+
+  #[test]
+  fn tokenize_single() {
+    assert_eq!(
+      lex("-c 'for i in {1..10}; do echo $i; done'").unwrap(),
+      vec!["-c", "for i in {1..10}; do echo $i; done"]
+    );
+  }
+
+  #[test]
+  fn unmatched_delimiter() {
+    assert!(lex("-c 'echo foo").is_err());
   }
 
   #[test]

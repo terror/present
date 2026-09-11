@@ -61,13 +61,6 @@ mod tests {
   }
 
   #[test]
-  fn offset_positive() {
-    let mut diff = diff();
-    diff.offset(1);
-    assert_eq!(diff.range, 2..5);
-  }
-
-  #[test]
   fn offset_negative() {
     let mut diff = diff();
     diff.offset(-1);
@@ -75,10 +68,24 @@ mod tests {
   }
 
   #[test]
+  fn offset_negative_large() {
+    let mut diff = diff();
+    diff.offset(isize::MIN);
+    assert_eq!(diff.range, 0..0);
+  }
+
+  #[test]
   fn offset_negative_overflow() {
     let mut diff = diff();
     diff.offset(-10);
     assert_eq!(diff.range, 0..0);
+  }
+
+  #[test]
+  fn offset_positive() {
+    let mut diff = diff();
+    diff.offset(1);
+    assert_eq!(diff.range, 2..5);
   }
 
   #[test]
@@ -91,12 +98,5 @@ mod tests {
       diff.range,
       (1 + isize::MAX as usize)..(4 + isize::MAX as usize)
     );
-  }
-
-  #[test]
-  fn offset_negative_large() {
-    let mut diff = diff();
-    diff.offset(isize::MIN);
-    assert_eq!(diff.range, 0..0);
   }
 }

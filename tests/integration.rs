@@ -470,13 +470,13 @@ fn list_codeblock() -> Result {
   Test::new()?
     .markdown(
       r#"
-      - ```present printf 'foo\nbar\n'
+      - ```present printf 'foo\\nbar\\n'
         ```
       "#,
     )
     .expected_stdout(
       r#"
-      - ```present printf 'foo\nbar\n'
+      - ```present printf 'foo\\nbar\\n'
         foo
         bar
         ```
@@ -601,7 +601,7 @@ fn nested_codeblock() -> Result {
       r#"
       - foo
 
-        > > ```present printf 'bar\n\nbaz'
+        > > ```present printf 'bar\\n\\nbaz'
         > > qux
         > > ```
 
@@ -612,7 +612,7 @@ fn nested_codeblock() -> Result {
       "
       - foo
 
-        > > ```present printf 'bar\\n\\nbaz'
+        > > ```present printf 'bar\\\\n\\\\nbaz'
         > > bar
         > >\x20
         > > baz
@@ -790,7 +790,7 @@ fn remove_list_codeblock() -> Result {
   Test::new()?
     .markdown(
       r#"
-      - ```present printf 'foo\nbar\n'
+      - ```present printf 'foo\\nbar\\n'
         ```
       "#,
     )
@@ -879,7 +879,7 @@ fn remove_nested_codeblock() -> Result {
   Test::new()?
     .markdown(
       r#"
-      > 10. ~~~present printf 'foo\nbar'
+      > 10. ~~~present printf 'foo\\nbar'
       >     ~~~
       "#,
     )

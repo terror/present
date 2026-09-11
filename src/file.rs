@@ -75,6 +75,45 @@ impl File {
     self.codeblocks.iter().map(|codeblock| {
       let content = codeblock.command.execute()?;
 
+      let prefix = self
+        .content
+        .byte_slice(
+          self.content.line_to_byte(
+            self.content.byte_to_line(codeblock.position.block.start),
+          )..codeblock.position.block.start,
+        )
+        .chars()
+        .fold((String::new(), 0), |(mut prefix, column), c| {
+          let width = if c == '\t' { 4 - column % 4 } else { 1 };
+
+          if c == '>' {
+            prefix.push(c);
+          } else {
+            if !matches!(c, ' ' | '\t') && prefix.ends_with('>') {
+              prefix.push(' ');
+            }
+
+            prefix.push_str(&" ".repeat(width));
+          }
+
+          (prefix, column + width)
+        })
+        .0;
+
+      let separator = if prefix.ends_with('>') { " " } else { "" };
+
+      let content = content
+        .split_inclusive('\n')
+        .enumerate()
+        .map(|(index, line)| {
+          if self.remove && index == 0 {
+            format!("{separator}{line}")
+          } else {
+            format!("{prefix}{separator}{line}")
+          }
+        })
+        .collect::<String>();
+
       let content = if !self.remove
         && self.content.byte(codeblock.position.body.start - 1) != b'\n'
       {

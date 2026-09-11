@@ -185,6 +185,36 @@ fn codeblock_with_invalid_closing_fence() -> Result {
 }
 
 #[test]
+fn codeblock_with_tab_indentation() -> Result {
+  Test::new()?
+    .markdown("🚀\n\n>-\t~~~present printf 'foo\\\\r\\\\nbar\\\\r\\\\n'\n>    ~~~\n")
+    .expected_stdout(
+      "🚀\n\n>-\t~~~present printf 'foo\\\\r\\\\nbar\\\\r\\\\n'\n>    foo\r\n>    bar\r\n>    ~~~\n",
+    )
+    .run()
+}
+
+#[test]
+fn compact_blockquote_codeblock() -> Result {
+  Test::new()?
+    .markdown(
+      r#"
+      >```present printf '    foo\n    bar\n'
+      >```
+      "#,
+    )
+    .expected_stdout(
+      r#"
+      >```present printf '    foo\n    bar\n'
+      >     foo
+      >     bar
+      >```
+      "#,
+    )
+    .run()
+}
+
+#[test]
 fn complex_shell_pipeline() -> Result {
   Test::new()?
   .markdown(
@@ -436,6 +466,26 @@ fn large_output_handling() -> Result {
 }
 
 #[test]
+fn list_codeblock() -> Result {
+  Test::new()?
+    .markdown(
+      r#"
+      - ```present printf 'foo\nbar\n'
+        ```
+      "#,
+    )
+    .expected_stdout(
+      r#"
+      - ```present printf 'foo\nbar\n'
+        foo
+        bar
+        ```
+      "#,
+    )
+    .run()
+}
+
+#[test]
 fn multiple_commands() -> Result {
   Test::new()?
     .markdown(
@@ -545,6 +595,36 @@ fn multiple_markdown_files() -> Result {
 }
 
 #[test]
+fn nested_codeblock() -> Result {
+  Test::new()?
+    .markdown(
+      r#"
+      - foo
+
+        > > ```present printf 'bar\n\nbaz'
+        > > qux
+        > > ```
+
+      quux
+      "#,
+    )
+    .expected_stdout(
+      "
+      - foo
+
+        > > ```present printf 'bar\\n\\nbaz'
+        > > bar
+        > >\x20
+        > > baz
+        > > ```
+
+      quux
+      ",
+    )
+    .run()
+}
+
+#[test]
 fn opening_fence_at_eof() -> Result {
   #[track_caller]
   fn case(remove: bool, expected: &str) -> Result {
@@ -563,6 +643,18 @@ fn opening_fence_at_eof() -> Result {
 
   case(false, "```present echo foo\nfoo\n")?;
   case(true, "foo\n")
+}
+
+#[test]
+fn opening_nested_fence_at_eof() -> Result {
+  Test::new()?
+    .markdown("1. > ```present printf foo")
+    .expected_stdout(
+      "
+      1. > ```present printf foo
+         > foo",
+    )
+    .run()
 }
 
 #[test]
@@ -660,6 +752,59 @@ fn remove_command_with_exterior_content() -> Result {
 }
 
 #[test]
+fn remove_compact_blockquote_codeblock() -> Result {
+  Test::new()?
+    .markdown(
+      r#"
+      >```present printf '    foo\n    bar\n'
+      >```
+      "#,
+    )
+    .argument("--remove")
+    .expected_stdout(
+      "
+      >     foo
+      >     bar
+      ",
+    )
+    .run()
+}
+
+#[test]
+fn remove_empty_blockquote_codeblock() -> Result {
+  Test::new()?
+    .markdown(
+      "
+      > ```present printf ''
+      > foo
+      > ```
+      ",
+    )
+    .argument("--remove")
+    .expected_stdout("> ")
+    .run()
+}
+
+#[test]
+fn remove_list_codeblock() -> Result {
+  Test::new()?
+    .markdown(
+      r#"
+      - ```present printf 'foo\nbar\n'
+        ```
+      "#,
+    )
+    .argument("--remove")
+    .expected_stdout(
+      "
+      - foo
+        bar
+      ",
+    )
+    .run()
+}
+
+#[test]
 fn remove_multiple_commands() -> Result {
   Test::new()?
     .markdown(
@@ -726,6 +871,20 @@ fn remove_multiple_commands_with_exterior_content() -> Result {
       baz
       ",
     )
+    .run()
+}
+
+#[test]
+fn remove_nested_codeblock() -> Result {
+  Test::new()?
+    .markdown(
+      r#"
+      > 10. ~~~present printf 'foo\nbar'
+      >     ~~~
+      "#,
+    )
+    .argument("--remove")
+    .expected_stdout("> 10. foo\n>     bar")
     .run()
 }
 
@@ -814,8 +973,15 @@ fn unclosed_codeblock_with_trailing_whitespace() -> Result {
   #[track_caller]
   fn case(src: &str) -> Result {
     Test::new()?
-      .markdown(src)
-      .expected_stdout("  ```present echo foo\nfoo\n")
+      .markdown(&format!("\nfoo\n\n{src}"))
+      .expected_stdout(
+        "
+        foo
+
+          ```present echo foo
+          foo
+        ",
+      )
       .run()
   }
 

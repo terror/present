@@ -122,111 +122,6 @@ impl Test {
 }
 
 #[test]
-fn simple() -> Result {
-  Test::new()?
-    .markdown(
-      "
-      ```present echo foo
-      ```
-      ",
-    )
-    .expected_status(0)
-    .expected_stdout(
-      "
-      ```present echo foo
-      foo
-      ```
-      ",
-    )
-    .run()
-}
-
-#[test]
-fn tokenize_command() -> Result {
-  #[track_caller]
-  fn case(command: &str, expected: &str) -> Result {
-    Test::new()?
-      .markdown(&format!("```{command}\n```\n"))
-      .expected_stdout(&format!("```{command}\n{expected}\n```\n"))
-      .run()
-  }
-
-  case("present   echo foo", "foo")?;
-  case("present\techo\tfoo", "foo")?;
-  case(" \tpresent echo foo", "foo")?;
-  case(r#"present "echo" foo"#, "foo")?;
-  case(r#"present 'ec'ho foo"bar" '' """#, "foobar  ")
-}
-
-#[test]
-#[cfg(target_os = "windows")]
-fn shell_script() -> Result {
-  let test = Test::new()?
-    .markdown("```present ./foo 'bar baz'\n```\n")
-    .expected_stdout("```present ./foo 'bar baz'\nbar baz\n```\n");
-
-  fs::write(
-    test.tempdir.path().join("foo"),
-    "#!/bin/bash\nprintf '%s\\n' \"$1\"\n",
-  )?;
-
-  test.run()
-}
-
-#[test]
-fn crlf_before_codeblock() -> Result {
-  Test::new()?
-    .markdown("foo\r\n\r\n```present echo bar\r\nbaz\r\n```\r\n\r\nqux\r\n")
-    .expected_stdout(
-      "foo\r\n\r\n```present echo bar\r\nbar\n```\r\n\r\nqux\r\n",
-    )
-    .run()
-}
-
-#[test]
-fn opening_fence_at_eof() -> Result {
-  #[track_caller]
-  fn case(remove: bool, expected: &str) -> Result {
-    let test = Test::new()?
-      .markdown("```present echo foo")
-      .expected_stdout(expected);
-
-    let test = if remove {
-      test.argument("--remove")
-    } else {
-      test
-    };
-
-    test.run()
-  }
-
-  case(false, "```present echo foo\nfoo\n")?;
-  case(true, "foo\n")
-}
-
-#[test]
-fn unclosed_codeblock_with_trailing_whitespace() -> Result {
-  #[track_caller]
-  fn case(src: &str) -> Result {
-    Test::new()?
-      .markdown(src)
-      .expected_stdout("  ```present echo foo\nfoo\n")
-      .run()
-  }
-
-  case("  ```present echo foo\nbar\n  ")?;
-  case("  ```present echo foo\n  ")
-}
-
-#[test]
-fn unrelated_tilde_fence() -> Result {
-  Test::new()?
-    .markdown("~~~foo\nbar\n~~~\n\n```present echo baz\n```\n")
-    .expected_stdout("~~~foo\nbar\n~~~\n\n```present echo baz\nbaz\n```\n")
-    .run()
-}
-
-#[test]
 fn arbitrary_fence_length() -> Result {
   Test::new()?
     .markdown(
@@ -241,6 +136,30 @@ fn arbitrary_fence_length() -> Result {
       `````present echo foo
       foo
       `````
+      ",
+    )
+    .run()
+}
+
+#[test]
+fn codeblock_with_content() -> Result {
+  Test::new()?
+    .markdown(
+      "
+      ```present echo foo
+
+      bar
+      baz
+
+      ```
+      ",
+    )
+    .expected_status(0)
+    .expected_stdout(
+      "
+      ```present echo foo
+      foo
+      ```
       ",
     )
     .run()
@@ -263,6 +182,197 @@ fn codeblock_with_invalid_closing_fence() -> Result {
       ",
     )
     .run()
+}
+
+#[test]
+fn complex_shell_pipeline() -> Result {
+  Test::new()?
+  .markdown(
+    r#"
+    ```present bash -c "echo 'hello world' | tr ' ' '\n' | sort | uniq -c | sort -nr | sed 's/^[[:space:]]*//' "
+    ```
+    "#,
+  )
+  .expected_status(0)
+  .expected_stdout(
+    r#"
+    ```present bash -c "echo 'hello world' | tr ' ' '\n' | sort | uniq -c | sort -nr | sed 's/^[[:space:]]*//' "
+    1 world
+    1 hello
+    ```
+    "#,
+  )
+  .run()
+}
+
+#[test]
+fn crlf_before_codeblock() -> Result {
+  Test::new()?
+    .markdown("foo\r\n\r\n```present echo bar\r\nbaz\r\n```\r\n\r\nqux\r\n")
+    .expected_stdout(
+      "foo\r\n\r\n```present echo bar\r\nbar\n```\r\n\r\nqux\r\n",
+    )
+    .run()
+}
+
+#[test]
+fn escaping_special_characters() -> Result {
+  Test::new()?
+    .markdown(
+      r#"
+      ```present echo "Special chars: && || > < | ; \" ' \\"
+      ```
+      "#,
+    )
+    .expected_status(0)
+    .expected_stdout(
+      r#"
+      ```present echo "Special chars: && || > < | ; \" ' \\"
+      Special chars: && || > < | ; " ' \
+      ```
+      "#,
+    )
+    .run()
+}
+
+#[test]
+fn grapheme_handling() -> Result {
+  Test::new()?
+    .markdown(
+      r#"
+      Hello, 世界! 👋
+
+      ```present echo "🚀 Grapheme test: é, 世界, 👨‍👩‍👧‍👦"
+      ```
+
+      Grapheme cluster: 👨‍👩‍👧‍👦
+      "#,
+    )
+    .expected_status(0)
+    .expected_stdout(
+      r#"
+      Hello, 世界! 👋
+
+      ```present echo "🚀 Grapheme test: é, 世界, 👨‍👩‍👧‍👦"
+      🚀 Grapheme test: é, 世界, 👨‍👩‍👧‍👦
+      ```
+
+      Grapheme cluster: 👨‍👩‍👧‍👦
+      "#,
+    )
+    .run()
+}
+
+#[test]
+fn inline_script_complex() -> Result {
+  Test::new()?
+    .markdown(
+      "
+      ```present bash -c 'for i in {1..10}; do echo $i; done'
+      ```
+      ",
+    )
+    .expected_status(0)
+    .expected_stdout(
+      "
+      ```present bash -c 'for i in {1..10}; do echo $i; done'
+      1
+      2
+      3
+      4
+      5
+      6
+      7
+      8
+      9
+      10
+      ```
+      ",
+    )
+    .run()
+}
+
+#[test]
+fn inline_script_simple() -> Result {
+  Test::new()?
+    .markdown(
+      "
+      ```present bash -c 'echo foo'
+      ```
+      ",
+    )
+    .expected_status(0)
+    .expected_stdout(
+      "
+      ```present bash -c 'echo foo'
+      foo
+      ```
+      ",
+    )
+    .run()
+}
+
+#[test]
+fn inline_unmatched_delimiter() -> Result {
+  #[track_caller]
+  fn case(command: &str) -> Result {
+    Test::new()?
+      .markdown(&format!("```present {command}\n```\n"))
+      .expected_status(1)
+      .expected_stderr("error: Lex Error: Unmatched delimiter\n")
+      .run()
+  }
+
+  case("bash -c 'echo foo")?;
+  case("'foo")?;
+  case("\"foo")?;
+  case("foo'bar")
+}
+
+#[test]
+fn interactive_accept() -> Result {
+  let tempdir = Test::new()?
+    .markdown("```present echo foo\n```")
+    .tempdir()?;
+
+  let mut command = Command::new(executable_path(env!("CARGO_PKG_NAME")))
+    .args([tempdir.path().to_str().unwrap(), "--interactive"])
+    .stdin(Stdio::piped())
+    .stdout(Stdio::piped())
+    .stderr(Stdio::piped())
+    .spawn()?;
+
+  write!(command.stdin.as_mut().unwrap(), "y")?;
+
+  assert_eq!(
+    str::from_utf8(&command.wait_with_output()?.stdout)?,
+    "```present echo foo\nfoo\n```"
+  );
+
+  Ok(())
+}
+
+#[test]
+fn interactive_reject() -> Result {
+  let tempdir = Test::new()?
+    .markdown("```present echo foo\n```")
+    .tempdir()?;
+
+  let mut command = Command::new(executable_path(env!("CARGO_PKG_NAME")))
+    .args([tempdir.path().to_str().unwrap(), "--interactive"])
+    .stdin(Stdio::piped())
+    .stdout(Stdio::piped())
+    .stderr(Stdio::piped())
+    .spawn()?;
+
+  write!(command.stdin.as_mut().unwrap(), "n")?;
+
+  assert_eq!(
+    str::from_utf8(&command.wait_with_output()?.stdout)?,
+    "```present echo foo\n```"
+  );
+
+  Ok(())
 }
 
 #[test]
@@ -304,30 +414,24 @@ fn invalid_command() -> Result {
 }
 
 #[test]
-fn simple_with_exterior_content() -> Result {
+#[cfg(not(target_os = "windows"))]
+fn large_output_handling() -> Result {
   Test::new()?
     .markdown(
-      "
-      foo!
-
-      ```present echo bar
+      r#"
+      ```present python -c "print('Large ' * 1000)"
       ```
-
-      baz!
-      ",
+      "#,
     )
     .expected_status(0)
-    .expected_stdout(
-      "
-      foo!
-
-      ```present echo bar
-      bar
+    .expected_stdout(&format!(
+      r#"
+      ```present python -c "print('Large ' * 1000)"
+      {}
       ```
-
-      baz!
-      ",
-    )
+      "#,
+      "Large ".repeat(1000)
+    ))
     .run()
 }
 
@@ -409,6 +513,56 @@ fn multiple_commands_with_exterior_content() -> Result {
       ",
     )
     .run()
+}
+
+#[test]
+fn multiple_markdown_files() -> Result {
+  Test::new()?
+    .markdown(
+      "
+      ```present echo foo
+      ```
+      ",
+    )
+    .markdown(
+      "
+      ```present echo foo
+      ```
+      ",
+    )
+    .expected_status(0)
+    .expected_stdout(
+      "
+      ```present echo foo
+      foo
+      ```
+      ```present echo foo
+      foo
+      ```
+      ",
+    )
+    .run()
+}
+
+#[test]
+fn opening_fence_at_eof() -> Result {
+  #[track_caller]
+  fn case(remove: bool, expected: &str) -> Result {
+    let test = Test::new()?
+      .markdown("```present echo foo")
+      .expected_stdout(expected);
+
+    let test = if remove {
+      test.argument("--remove")
+    } else {
+      test
+    };
+
+    test.run()
+  }
+
+  case(false, "```present echo foo\nfoo\n")?;
+  case(true, "foo\n")
 }
 
 #[test]
@@ -533,259 +687,97 @@ fn remove_multiple_commands_with_exterior_content() -> Result {
 }
 
 #[test]
-fn codeblock_with_content() -> Result {
+#[cfg(target_os = "windows")]
+fn shell_script() -> Result {
+  let test = Test::new()?
+    .markdown("```present ./foo 'bar baz'\n```\n")
+    .expected_stdout("```present ./foo 'bar baz'\nbar baz\n```\n");
+
+  fs::write(
+    test.tempdir.path().join("foo"),
+    "#!/bin/bash\nprintf '%s\\n' \"$1\"\n",
+  )?;
+
+  test.run()
+}
+
+#[test]
+fn simple() -> Result {
   Test::new()?
     .markdown(
       "
       ```present echo foo
+      ```
+      ",
+    )
+    .expected_status(0)
+    .expected_stdout(
+      "
+      ```present echo foo
+      foo
+      ```
+      ",
+    )
+    .run()
+}
 
+#[test]
+fn simple_with_exterior_content() -> Result {
+  Test::new()?
+    .markdown(
+      "
+      foo!
+
+      ```present echo bar
+      ```
+
+      baz!
+      ",
+    )
+    .expected_status(0)
+    .expected_stdout(
+      "
+      foo!
+
+      ```present echo bar
       bar
-      baz
+      ```
 
-      ```
-      ",
-    )
-    .expected_status(0)
-    .expected_stdout(
-      "
-      ```present echo foo
-      foo
-      ```
+      baz!
       ",
     )
     .run()
 }
 
 #[test]
-fn multiple_markdown_files() -> Result {
-  Test::new()?
-    .markdown(
-      "
-      ```present echo foo
-      ```
-      ",
-    )
-    .markdown(
-      "
-      ```present echo foo
-      ```
-      ",
-    )
-    .expected_status(0)
-    .expected_stdout(
-      "
-      ```present echo foo
-      foo
-      ```
-      ```present echo foo
-      foo
-      ```
-      ",
-    )
-    .run()
-}
-
-#[test]
-fn inline_script_simple() -> Result {
-  Test::new()?
-    .markdown(
-      "
-      ```present bash -c 'echo foo'
-      ```
-      ",
-    )
-    .expected_status(0)
-    .expected_stdout(
-      "
-      ```present bash -c 'echo foo'
-      foo
-      ```
-      ",
-    )
-    .run()
-}
-
-#[test]
-fn inline_script_complex() -> Result {
-  Test::new()?
-    .markdown(
-      "
-      ```present bash -c 'for i in {1..10}; do echo $i; done'
-      ```
-      ",
-    )
-    .expected_status(0)
-    .expected_stdout(
-      "
-      ```present bash -c 'for i in {1..10}; do echo $i; done'
-      1
-      2
-      3
-      4
-      5
-      6
-      7
-      8
-      9
-      10
-      ```
-      ",
-    )
-    .run()
-}
-
-#[test]
-fn inline_unmatched_delimiter() -> Result {
+fn tokenize_command() -> Result {
   #[track_caller]
-  fn case(command: &str) -> Result {
+  fn case(command: &str, expected: &str) -> Result {
     Test::new()?
-      .markdown(&format!("```present {command}\n```\n"))
-      .expected_status(1)
-      .expected_stderr("error: Lex Error: Unmatched delimiter\n")
+      .markdown(&format!("```{command}\n```\n"))
+      .expected_stdout(&format!("```{command}\n{expected}\n```\n"))
       .run()
   }
 
-  case("bash -c 'echo foo")?;
-  case("'foo")?;
-  case("\"foo")?;
-  case("foo'bar")
+  case("present   echo foo", "foo")?;
+  case("present\techo\tfoo", "foo")?;
+  case(" \tpresent echo foo", "foo")?;
+  case(r#"present "echo" foo"#, "foo")?;
+  case(r#"present 'ec'ho foo"bar" '' """#, "foobar  ")
 }
 
 #[test]
-fn interactive_accept() -> Result {
-  let tempdir = Test::new()?
-    .markdown("```present echo foo\n```")
-    .tempdir()?;
+fn unclosed_codeblock_with_trailing_whitespace() -> Result {
+  #[track_caller]
+  fn case(src: &str) -> Result {
+    Test::new()?
+      .markdown(src)
+      .expected_stdout("  ```present echo foo\nfoo\n")
+      .run()
+  }
 
-  let mut command = Command::new(executable_path(env!("CARGO_PKG_NAME")))
-    .args([tempdir.path().to_str().unwrap(), "--interactive"])
-    .stdin(Stdio::piped())
-    .stdout(Stdio::piped())
-    .stderr(Stdio::piped())
-    .spawn()?;
-
-  write!(command.stdin.as_mut().unwrap(), "y")?;
-
-  assert_eq!(
-    str::from_utf8(&command.wait_with_output()?.stdout)?,
-    "```present echo foo\nfoo\n```"
-  );
-
-  Ok(())
-}
-
-#[test]
-fn interactive_reject() -> Result {
-  let tempdir = Test::new()?
-    .markdown("```present echo foo\n```")
-    .tempdir()?;
-
-  let mut command = Command::new(executable_path(env!("CARGO_PKG_NAME")))
-    .args([tempdir.path().to_str().unwrap(), "--interactive"])
-    .stdin(Stdio::piped())
-    .stdout(Stdio::piped())
-    .stderr(Stdio::piped())
-    .spawn()?;
-
-  write!(command.stdin.as_mut().unwrap(), "n")?;
-
-  assert_eq!(
-    str::from_utf8(&command.wait_with_output()?.stdout)?,
-    "```present echo foo\n```"
-  );
-
-  Ok(())
-}
-
-#[test]
-fn grapheme_handling() -> Result {
-  Test::new()?
-    .markdown(
-      r#"
-      Hello, 世界! 👋
-
-      ```present echo "🚀 Grapheme test: é, 世界, 👨‍👩‍👧‍👦"
-      ```
-
-      Grapheme cluster: 👨‍👩‍👧‍👦
-      "#,
-    )
-    .expected_status(0)
-    .expected_stdout(
-      r#"
-      Hello, 世界! 👋
-
-      ```present echo "🚀 Grapheme test: é, 世界, 👨‍👩‍👧‍👦"
-      🚀 Grapheme test: é, 世界, 👨‍👩‍👧‍👦
-      ```
-
-      Grapheme cluster: 👨‍👩‍👧‍👦
-      "#,
-    )
-    .run()
-}
-
-#[test]
-#[cfg(not(target_os = "windows"))]
-fn large_output_handling() -> Result {
-  Test::new()?
-    .markdown(
-      r#"
-      ```present python -c "print('Large ' * 1000)"
-      ```
-      "#,
-    )
-    .expected_status(0)
-    .expected_stdout(&format!(
-      r#"
-      ```present python -c "print('Large ' * 1000)"
-      {}
-      ```
-      "#,
-      "Large ".repeat(1000)
-    ))
-    .run()
-}
-
-#[test]
-fn escaping_special_characters() -> Result {
-  Test::new()?
-    .markdown(
-      r#"
-      ```present echo "Special chars: && || > < | ; \" ' \\"
-      ```
-      "#,
-    )
-    .expected_status(0)
-    .expected_stdout(
-      r#"
-      ```present echo "Special chars: && || > < | ; \" ' \\"
-      Special chars: && || > < | ; " ' \
-      ```
-      "#,
-    )
-    .run()
-}
-
-#[test]
-fn complex_shell_pipeline() -> Result {
-  Test::new()?
-  .markdown(
-    r#"
-    ```present bash -c "echo 'hello world' | tr ' ' '\n' | sort | uniq -c | sort -nr | sed 's/^[[:space:]]*//' "
-    ```
-    "#,
-  )
-  .expected_status(0)
-  .expected_stdout(
-    r#"
-    ```present bash -c "echo 'hello world' | tr ' ' '\n' | sort | uniq -c | sort -nr | sed 's/^[[:space:]]*//' "
-    1 world
-    1 hello
-    ```
-    "#,
-  )
-  .run()
+  case("  ```present echo foo\nbar\n  ")?;
+  case("  ```present echo foo\n  ")
 }
 
 #[test]
@@ -806,5 +798,13 @@ fn unicode_normalization() -> Result {
       ```
       "#,
     )
+    .run()
+}
+
+#[test]
+fn unrelated_tilde_fence() -> Result {
+  Test::new()?
+    .markdown("~~~foo\nbar\n~~~\n\n```present echo baz\n```\n")
+    .expected_stdout("~~~foo\nbar\n~~~\n\n```present echo baz\nbaz\n```\n")
     .run()
 }

@@ -21,16 +21,7 @@ impl Command {
 
   pub(crate) fn execute(&self) -> Result<String> {
     #[cfg(target_os = "windows")]
-    let program = std::env::var_os("PATH")
-      .into_iter()
-      .flat_map(|path| std::env::split_paths(&path).collect::<Vec<_>>())
-      .flat_map(|directory| {
-        ["", ".com", ".exe", ".bat", ".cmd"].map(move |extension| {
-          directory.join(format!("{}{extension}", self.program))
-        })
-      })
-      .find(|path| path.is_file())
-      .unwrap_or_else(|| self.program.clone().into());
+    let program = &Self::resolve(&self.program);
 
     #[cfg(not(target_os = "windows"))]
     let program = &self.program;
@@ -38,6 +29,18 @@ impl Command {
     let output = process::Command::new(program)
       .args(&self.arguments)
       .output();
+
+    #[cfg(target_os = "windows")]
+    let output = match output {
+      Err(error) if error.raw_os_error() == Some(193) => {
+        process::Command::new(Self::resolve("bash"))
+          .args(["-c", "exec \"$@\"", "--"])
+          .arg(program)
+          .args(&self.arguments)
+          .output()
+      }
+      output => output,
+    };
 
     if let Err(error) = output {
       return Err(Error::Command {
@@ -56,5 +59,18 @@ impl Command {
     }
 
     Ok(String::from_utf8(output.stdout)?)
+  }
+
+  #[cfg(target_os = "windows")]
+  fn resolve(program: &str) -> PathBuf {
+    std::env::var_os("PATH")
+      .into_iter()
+      .flat_map(|path| std::env::split_paths(&path).collect::<Vec<_>>())
+      .flat_map(|directory| {
+        ["", ".com", ".exe", ".bat", ".cmd"]
+          .map(move |extension| directory.join(format!("{program}{extension}")))
+      })
+      .find(|path| path.is_file())
+      .unwrap_or_else(|| program.into())
   }
 }

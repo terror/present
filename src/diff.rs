@@ -1,4 +1,4 @@
-use crate::{common::*, RopeExt};
+use super::*;
 
 /// Represents a diff in a [`File`](crate::File)
 #[derive(Debug, Clone)]

@@ -1,4 +1,4 @@
-use crate::{common::*, Error, Lexer, Result};
+use super::*;
 
 const PREFIX: &str = "present";
 
@@ -69,9 +69,9 @@ impl Command {
 
   #[cfg(target_os = "windows")]
   fn resolve(program: &str) -> PathBuf {
-    std::env::var_os("PATH")
+    env::var_os("PATH")
       .into_iter()
-      .flat_map(|path| std::env::split_paths(&path).collect::<Vec<_>>())
+      .flat_map(|path| env::split_paths(&path).collect::<Vec<_>>())
       .flat_map(|directory| {
         ["", ".com", ".exe", ".bat", ".cmd"]
           .map(move |extension| directory.join(format!("{program}{extension}")))

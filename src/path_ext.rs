@@ -1,7 +1,4 @@
-use {
-  present::{Error, Result},
-  std::path::PathBuf,
-};
+use super::*;
 
 const MARKDOWN: &str = "md";
 

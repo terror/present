@@ -1,4 +1,4 @@
-use crate::{Error, Result};
+use super::*;
 
 #[derive(Debug)]
 pub(crate) struct Lexer<'a> {
@@ -58,7 +58,7 @@ impl<'a> Lexer<'a> {
   fn parse_quoted_string(
     &self,
     quote: char,
-    chars: &mut std::iter::Peekable<std::str::Chars>,
+    chars: &mut Peekable<Chars>,
   ) -> Result<String> {
     let mut result = String::new();
     let mut escaped = false;

@@ -1,4 +1,4 @@
-use crate::{common::*, prompt, Codeblock, Diff, Parser, Result, RopeExt};
+use super::*;
 
 /// Represents a parsed Markdown file that can be presented
 #[derive(Debug, Clone)]

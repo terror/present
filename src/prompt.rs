@@ -1,4 +1,4 @@
-use crate::{common::*, Result};
+use super::*;
 
 pub(crate) fn prompt(message: &str) -> Result<String> {
   eprint!("{} › ", Style::new().apply_to(message).bold());

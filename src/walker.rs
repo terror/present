@@ -1,7 +1,4 @@
-use {
-  crate::path_ext::PathExt, clap::Parser as StructOpt, present::Result,
-  std::path::PathBuf,
-};
+use super::*;
 
 #[derive(Debug)]
 pub(crate) struct Walker {
@@ -9,7 +6,7 @@ pub(crate) struct Walker {
   recursive: bool,
 }
 
-#[derive(Debug, Clone, StructOpt)]
+#[derive(Debug, Clone, Parser)]
 pub(crate) struct WalkerOptions {
   #[clap(help = "A file or directory path to present.")]
   pub(crate) path: Option<PathBuf>,
@@ -19,10 +16,7 @@ pub(crate) struct WalkerOptions {
 
 impl Walker {
   pub(crate) fn new(options: WalkerOptions) -> Result<Self> {
-    let path = options
-      .path
-      .unwrap_or(std::env::current_dir()?)
-      .validate()?;
+    let path = options.path.unwrap_or(env::current_dir()?).validate()?;
 
     Ok(Self {
       path,
@@ -31,7 +25,7 @@ impl Walker {
   }
 
   pub(crate) fn files(&self) -> impl Iterator<Item = PathBuf> {
-    let mut walker = walkdir::WalkDir::new(&self.path);
+    let mut walker = WalkDir::new(&self.path);
 
     if !self.recursive {
       walker = walker.max_depth(1);

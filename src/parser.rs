@@ -1,4 +1,4 @@
-use crate::{common::*, Codeblock, Command, Position, Result};
+use super::*;
 
 #[derive(Debug, Clone)]
 pub(crate) struct Parser<'a> {
@@ -11,7 +11,7 @@ impl<'a> Parser<'a> {
   }
 
   pub(crate) fn parse(&self) -> Result<Vec<Codeblock>> {
-    let mut parser = MarkdownParser::new(self.src).into_offset_iter();
+    let mut parser = pulldown_cmark::Parser::new(self.src).into_offset_iter();
 
     let mut codeblocks = Vec::new();
 

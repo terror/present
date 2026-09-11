@@ -130,6 +130,8 @@ impl File {
       offset += self.content.len_bytes() as isize - prev as isize;
     }
 
+    self.codeblocks = Parser::new(&self.content.to_string()).parse()?;
+
     Ok(())
   }
 
@@ -145,5 +147,41 @@ impl File {
       true => print_inline(&self.content.to_string()),
       _ => print!("{}", self.content),
     }
+  }
+}
+
+#[cfg(test)]
+mod tests {
+  use super::*;
+
+  #[test]
+  fn present_repeatedly() {
+    #[track_caller]
+    fn case(src: &str, expected: &str, remove: bool) {
+      let mut file = File {
+        codeblocks: Parser::new(src).parse().unwrap(),
+        content: Rope::from_str(src),
+        interactive: false,
+        path: PathBuf::new(),
+        remove,
+      };
+
+      for _ in 0..2 {
+        file.present().unwrap();
+        assert_eq!(file.content.to_string(), expected);
+      }
+    }
+
+    let src = "foo\n\n```present echo 🚀\n```\n\n```present echo bar\nfoobarbaz\n```\n\nbaz\n";
+
+    case(
+      src,
+      "foo\n\n```present echo 🚀\n🚀\n```\n\n```present echo bar\nbar\n```\n\nbaz\n",
+      false,
+    );
+
+    case(src, "foo\n\n🚀\n\nbar\n\nbaz\n", true);
+
+    case("```present printf foo", "```present printf foo\nfoo", false);
   }
 }

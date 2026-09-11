@@ -73,17 +73,23 @@ impl File {
   /// be of the `Err` kind.
   pub fn diffs(&self) -> impl Iterator<Item = Result<Diff>> + '_ {
     self.codeblocks.iter().map(|codeblock| {
+      let content = codeblock.command.execute()?;
+
+      let content = if !self.remove
+        && self.content.byte(codeblock.position.body.start - 1) != b'\n'
+      {
+        format!("\n{content}")
+      } else {
+        content
+      };
+
       Ok(Diff {
-        content: codeblock.command.execute()?,
+        content,
         range: match self.remove {
           // Replace the entire codeblock with `stdout`
-          true => {
-            codeblock.position.start.start..codeblock.position.end.end + 2
-          }
+          true => codeblock.position.block.clone(),
           // Insert in between the codeblock (start, end)
-          false => {
-            codeblock.position.start.end + 1..codeblock.position.end.start + 1
-          }
+          false => codeblock.position.body.clone(),
         },
       })
     })

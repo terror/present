@@ -467,7 +467,6 @@ dependencies = [
  "snafu",
  "tempdir",
  "termimad",
- "unicode-segmentation",
  "unindent",
  "walkdir",
 ]

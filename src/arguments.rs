@@ -1,10 +1,6 @@
-use {
-  crate::walker::{Walker, WalkerOptions},
-  clap::Parser as StructOpt,
-  present::{File, Result},
-};
+use super::*;
 
-#[derive(Debug, StructOpt)]
+#[derive(Debug, Parser)]
 #[clap(about = env!("CARGO_PKG_DESCRIPTION"), version = env!("CARGO_PKG_VERSION"))]
 pub(crate) struct Arguments {
   #[clap(flatten)]

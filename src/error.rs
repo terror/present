@@ -1,4 +1,4 @@
-use crate::common::*;
+use super::*;
 
 /// Present's internal error type
 #[derive(Debug, Snafu)]
@@ -21,7 +21,7 @@ pub enum Error {
   PathDoesNotExist { path: PathBuf },
 
   #[snafu(context(false), display("Utf8 Error: {}", source))]
-  Utf8 { source: std::string::FromUtf8Error },
+  Utf8 { source: FromUtf8Error },
 
   #[snafu(context(false), display("Walkdir Error: {}", source))]
   Walkdir { source: walkdir::Error },

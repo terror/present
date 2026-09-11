@@ -17,9 +17,39 @@
 //! file.save();
 //! ```
 
+#[cfg(target_os = "windows")]
+use std::env;
+
+pub use {diff::Diff, error::Error, file::File};
+
+use {
+  codeblock::Codeblock,
+  command::Command,
+  console::Style,
+  lexer::Lexer,
+  parser::Parser,
+  position::Position,
+  prompt::prompt,
+  pulldown_cmark::{CodeBlockKind, Event, Tag, TagEnd},
+  rope_ext::RopeExt,
+  ropey::Rope,
+  similar::{ChangeTag, TextDiff},
+  snafu::Snafu,
+  std::{
+    fs,
+    io::{self, Write},
+    iter::Peekable,
+    ops::Range,
+    path::PathBuf,
+    process,
+    str::Chars,
+    string::FromUtf8Error,
+  },
+  termimad::print_inline,
+};
+
 mod codeblock;
 mod command;
-mod common;
 mod diff;
 mod error;
 mod file;
@@ -28,15 +58,6 @@ mod parser;
 mod position;
 mod prompt;
 mod rope_ext;
-
-// Publicly exposed
-pub use crate::{diff::Diff, error::Error, file::File};
-
-// Public only to crate
-pub(crate) use crate::{
-  codeblock::Codeblock, command::Command, lexer::Lexer, parser::Parser,
-  position::Position, prompt::prompt, rope_ext::RopeExt,
-};
 
 /// Present's internal result type
 pub type Result<T = (), E = Error> = std::result::Result<T, E>;

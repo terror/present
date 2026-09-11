@@ -1,4 +1,4 @@
-use crate::common::*;
+use super::*;
 
 #[derive(Debug, Default, Clone, PartialEq, Eq)]
 pub struct Position {

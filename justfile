@@ -8,19 +8,23 @@ alias r := run
 
 [group: 'misc']
 build:
-  cargo build
+  cargo build --workspace
+
+[group: 'release']
+changelog:
+  cargo run --package present-changelog
 
 [group: 'check']
 check:
- cargo check
+ cargo check --workspace
 
 [group: 'check']
 clippy:
-  cargo clippy --all-targets --all-features
+  cargo clippy --workspace --all-targets --all-features
 
 [group: 'format']
 fmt:
-  cargo +nightly fmt
+  cargo +nightly fmt --all
 
 [group: 'check']
 fmt-check:
@@ -55,7 +59,7 @@ readme:
 
 [group: 'test']
 test *args:
-  cargo test --all-targets {{args}}
+  cargo test --workspace --all-targets {{args}}
 
 [group: 'test']
 test-release-workflow:
@@ -63,6 +67,11 @@ test-release-workflow:
   -git push origin :test-release
   git tag test-release
   git push origin test-release
+
+[group: 'release']
+update-changelog *args:
+  echo >> CHANGELOG.md
+  git log --first-parent --pretty='format:- %s' {{args}} >> CHANGELOG.md
 
 [group: 'dev']
 watch +COMMAND='test':

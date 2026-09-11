@@ -79,7 +79,7 @@ jobs:
     - uses: Swatinem/rust-cache@v2
 
     - name: Check
-      run: cargo check
+      run: cargo check --workspace
 
   test:
     strategy:

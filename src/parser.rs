@@ -1,7 +1,4 @@
-use crate::{
-  byte_index_to_grapheme_index, common::*, grapheme_index_to_byte_index,
-  Codeblock, Command, Position, Result,
-};
+use crate::{common::*, Codeblock, Command, Position, Result};
 
 #[derive(Debug, Clone)]
 pub(crate) struct Parser<'a> {
@@ -14,116 +11,74 @@ impl<'a> Parser<'a> {
   }
 
   pub(crate) fn parse(&self) -> Result<Vec<Codeblock>> {
-    let normalized_src = self.src.replace("\r\n", "\n");
+    let mut parser = MarkdownParser::new(self.src).into_offset_iter();
 
-    let parser = MarkdownParser::new(&normalized_src);
+    let mut codeblocks = Vec::new();
 
-    let ranges = parser
-      .into_offset_iter()
-      .filter(|event| {
-        matches!(
-          event,
-          (Event::Start(Tag::CodeBlock(CodeBlockKind::Fenced(_))), _)
-        )
-      })
-      .map(|event| event.1)
-      .collect::<Vec<Range<usize>>>();
-
-    let codeblocks = ranges
-      .iter()
-      .map(|range| self.parse_codeblock(range.clone()))
-      .collect::<Result<Vec<_>, _>>()?;
-
-    Ok(
-      codeblocks
-        .iter()
-        .filter_map(|codeblock| codeblock.clone())
-        .collect(),
-    )
-  }
-
-  fn parse_codeblock(&self, range: Range<usize>) -> Result<Option<Codeblock>> {
-    let start_start = range.start;
-    let mut start_end = start_start;
-
-    let src_graphemes: Vec<&str> = self.src.graphemes(true).collect();
-
-    while let Some(grapheme) =
-      src_graphemes.get(byte_index_to_grapheme_index(self.src, start_end))
-    {
-      match *grapheme {
-        "`" => {
-          start_end = grapheme_index_to_byte_index(
-            self.src,
-            byte_index_to_grapheme_index(self.src, start_end) + 1,
-          )
-        }
-        _ => break,
+    while let Some((event, range)) = parser.next() {
+      if !matches!(
+        event,
+        Event::Start(Tag::CodeBlock(CodeBlockKind::Fenced(_)))
+      ) {
+        continue;
       }
+
+      let src = &self.src[range.clone()];
+
+      let fence = char::from(src.as_bytes()[0]);
+
+      let (info, start) = src
+        .split_once('\n')
+        .map_or((src, range.end), |(info, body)| {
+          (info, range.end - body.len())
+        });
+
+      let arguments = info
+        .trim_start_matches(fence)
+        .trim_end_matches('\r')
+        .split(' ')
+        .map(str::to_owned)
+        .collect();
+
+      let Some(command) = Command::from(arguments)? else {
+        continue;
+      };
+
+      let end = parser
+        .by_ref()
+        .take_while(|(event, _)| {
+          !matches!(event, Event::End(TagEnd::CodeBlock))
+        })
+        .last()
+        .map_or(start, |(_, range)| range.end);
+
+      let end = if self.src[end..range.end].contains(fence) {
+        end
+      } else {
+        range.end
+      };
+
+      let block_end = if end < range.end {
+        range.end
+          + match &self.src.as_bytes()[range.end..] {
+            [b'\r', b'\n', ..] => 2,
+            [b'\r' | b'\n', ..] => 1,
+            _ => 0,
+          }
+      } else {
+        range.end
+      };
+
+      codeblocks.push(Codeblock {
+        command,
+        position: Position {
+          block: range.start..block_end,
+          body: start..end,
+        },
+      });
     }
 
-    while let Some(grapheme) =
-      src_graphemes.get(byte_index_to_grapheme_index(self.src, start_end))
-    {
-      match *grapheme {
-        "`" | "\n" => break,
-        _ => {
-          start_end = grapheme_index_to_byte_index(
-            self.src,
-            byte_index_to_grapheme_index(self.src, start_end) + 1,
-          )
-        }
-      }
-    }
-
-    let end_end = range.end - 1;
-    let mut end_start = end_end;
-
-    while let Some(grapheme) =
-      src_graphemes.get(byte_index_to_grapheme_index(self.src, end_start))
-    {
-      match *grapheme {
-        "`" => break,
-        _ => {
-          end_start = grapheme_index_to_byte_index(
-            self.src,
-            byte_index_to_grapheme_index(self.src, end_start) - 1,
-          )
-        }
-      }
-    }
-
-    while let Some(grapheme) =
-      src_graphemes.get(byte_index_to_grapheme_index(self.src, end_start))
-    {
-      match *grapheme {
-        "`" => {
-          end_start = grapheme_index_to_byte_index(
-            self.src,
-            byte_index_to_grapheme_index(self.src, end_start) - 1,
-          )
-        }
-        _ => break,
-      }
-    }
-
-    let arguments = self.src[start_start..start_end]
-      .trim_start_matches('`')
-      .split(' ')
-      .map(|s| s.into())
-      .collect::<Vec<String>>();
-
-    Ok(match Command::from(arguments)? {
-      Some(command) => {
-        let position = Position {
-          start: start_start..start_end,
-          end: end_start..end_end,
-        };
-
-        Some(Codeblock { command, position })
-      }
-      None => None,
-    })
+    Ok(codeblocks)
   }
 }
 
@@ -132,68 +87,71 @@ mod tests {
   use super::*;
 
   #[test]
-  fn parse_codeblock_simple() {
-    let parser = Parser::new("```present echo bar\n```");
-
-    let codeblock = parser.parse_codeblock(0..22).unwrap().unwrap();
-
+  fn ignore_unrelated_codeblocks() {
     assert_eq!(
-      codeblock.command,
-      Command::from(vec!["present".into(), "echo".into(), "bar".into()])
-        .unwrap()
-        .unwrap()
-    );
-
-    assert_eq!(
-      codeblock.position,
-      Position {
-        start: 0..19,
-        end: 19..21
-      }
+      Parser::new(
+        "foo\n\n~~~```present echo foo\nbar\n~~~\n\n```bar\nbaz\n```\n\n    present echo foo\n",
+      )
+      .parse()
+      .unwrap(),
+      Vec::new(),
     );
   }
 
   #[test]
-  fn parse_codeblock_with_exterior_content() {
-    let parser = Parser::new("foo\n\n```present echo bar\n```\n\nbaz");
+  fn parse_codeblocks() {
+    #[track_caller]
+    fn case(
+      src: &str,
+      argument: &str,
+      block: Range<usize>,
+      body: Range<usize>,
+    ) {
+      assert_eq!(
+        Parser::new(src).parse().unwrap(),
+        vec![Codeblock {
+          command: Command::from(vec![
+            "present".into(),
+            "echo".into(),
+            argument.into(),
+          ])
+          .unwrap()
+          .unwrap(),
+          position: Position { block, body },
+        }],
+      );
+    }
 
-    let codeblock = parser.parse_codeblock(5..29).unwrap().unwrap();
+    case("```present echo foo\n```", "foo", 0..23, 20..20);
+    case("```present echo foo", "foo", 0..19, 19..19);
+    case("```present echo foo\n", "foo", 0..20, 20..20);
+    case("```present echo foo\nbar", "foo", 0..23, 20..23);
+    case("  ```present echo foo\nbar\n  ", "foo", 2..28, 22..28);
+    case("  ```present echo foo\n  ", "foo", 2..24, 22..24);
+    case("> ```present echo foo\n> bar\n> ", "foo", 2..30, 22..30);
+    case("> ```present echo foo\n> bar\n\nbaz", "foo", 2..28, 22..28);
+    case("🚀\n\n```present echo 🚀\nbar\n```\n", "🚀", 6..35, 27..31);
+    case("~~~present echo foo\nbar\n~~~~~  \n", "foo", 0..32, 20..24);
 
-    assert_eq!(
-      codeblock.command,
-      Command::from(vec!["present".into(), "echo".into(), "bar".into()])
-        .unwrap()
-        .unwrap()
+    case(
+      "foo\n\n```present echo bar\n```\n\nbaz",
+      "bar",
+      5..29,
+      25..25,
     );
 
-    assert_eq!(
-      codeblock.position,
-      Position {
-        start: 5..24,
-        end: 24..28
-      }
-    );
-  }
-
-  #[test]
-  fn parse_codeblock_with_unicode() {
-    let parser = Parser::new("```present echo 🚀\n```");
-
-    let codeblock = parser.parse_codeblock(0..23).unwrap().unwrap();
-
-    assert_eq!(
-      codeblock.command,
-      Command::from(vec!["present".into(), "echo".into(), "🚀".into()])
-        .unwrap()
-        .unwrap()
+    case(
+      "foo\r\n\r\n```present echo bar\r\nbaz\r\n```\r\n\r\nqux",
+      "bar",
+      7..38,
+      28..33,
     );
 
-    assert_eq!(
-      codeblock.position,
-      Position {
-        start: 0..20,
-        end: 20..22
-      }
+    case(
+      "  ```present echo foo\n  bar\n  ```\n",
+      "foo",
+      2..34,
+      22..28,
     );
   }
 }

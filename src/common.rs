@@ -10,10 +10,11 @@ pub(crate) use std::{
 
 pub(crate) use {
   console::Style,
-  pulldown_cmark::{CodeBlockKind, Event, Parser as MarkdownParser, Tag},
+  pulldown_cmark::{
+    CodeBlockKind, Event, Parser as MarkdownParser, Tag, TagEnd,
+  },
   ropey::Rope,
   similar::{ChangeTag, TextDiff},
   snafu::Snafu,
   termimad::print_inline,
-  unicode_segmentation::UnicodeSegmentation,
 };

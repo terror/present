@@ -83,6 +83,16 @@ impl File {
         content
       };
 
+      let content = if !self.remove
+        && codeblock.position.body.end < codeblock.position.block.end
+        && !content.is_empty()
+        && !content.ends_with('\n')
+      {
+        format!("{content}\n")
+      } else {
+        content
+      };
+
       Ok(Diff {
         content,
         range: match self.remove {

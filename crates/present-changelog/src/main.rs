@@ -1,6 +1,7 @@
 use {
+  core::str,
   regex::{Captures, Regex},
-  std::{fs, process::Command, str},
+  std::{fs, process::Command},
 };
 
 const REPO: &str = "terror/present";
@@ -8,17 +9,10 @@ const REPO: &str = "terror/present";
 fn author(pr: u64) -> String {
   eprintln!("#{pr}");
 
-  let output = Command::new("gh")
+  let output = Command::new("sh")
     .args([
-      "pr",
-      "view",
-      &pr.to_string(),
-      "--repo",
-      REPO,
-      "--json",
-      "author",
-      "--jq",
-      ".author.login",
+      "-c",
+      &format!("gh pr view {pr} --json author | jq -r .author.login"),
     ])
     .output()
     .unwrap();
@@ -26,28 +20,27 @@ fn author(pr: u64) -> String {
   assert!(
     output.status.success(),
     "{}",
-    str::from_utf8(&output.stderr).unwrap()
+    String::from_utf8_lossy(&output.stderr)
   );
 
   str::from_utf8(&output.stdout).unwrap().trim().to_owned()
 }
 
-fn link(changelog: &str, mut author: impl FnMut(u64) -> String) -> String {
-  Regex::new(r"\(#([0-9]+)( by @[^\s)]+)?\)")
-    .unwrap()
-    .replace_all(changelog, |captures: &Captures| {
-      let pr = captures[1].parse::<u64>().unwrap();
-      let contributor = author(pr);
-
-      format!("([#{pr}](https://github.com/{REPO}/pull/{pr}) by [{contributor}](https://github.com/{contributor}))")
-    })
-    .into_owned()
-}
-
 fn main() {
   fs::write(
     "CHANGELOG.md",
-    link(&fs::read_to_string("CHANGELOG.md").unwrap(), author),
+    &*Regex::new(r"\(#(\d+)( by @[a-z]+)?\)")
+      .unwrap()
+      .replace_all(
+        &fs::read_to_string("CHANGELOG.md").unwrap(),
+        |captures: &Captures| {
+          let pr = captures[1].parse().unwrap();
+
+          let contributor = author(pr);
+
+          format!("([#{pr}](https://github.com/{REPO}/pull/{pr}) by [{contributor}](https://github.com/{contributor}))")
+        },
+      ),
   )
   .unwrap();
 }

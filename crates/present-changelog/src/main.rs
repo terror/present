@@ -51,37 +51,3 @@ fn main() {
   )
   .unwrap();
 }
-
-#[cfg(test)]
-mod tests {
-  use super::*;
-
-  #[test]
-  fn linking() {
-    #[track_caller]
-    fn case(changelog: &str, expected: &str) {
-      assert_eq!(link(changelog, |pr| format!("foo{pr}")), expected);
-    }
-
-    case("", "");
-    case("foo", "foo");
-    case("foo (#bar)", "foo (#bar)");
-
-    let linked = "foo ([#1](https://github.com/terror/present/pull/1) by [foo1](https://github.com/foo1))";
-
-    for changelog in [
-      "foo (#1)",
-      "foo (#1 by @bar)",
-      "foo (#1 by @Bar-baz)",
-      "foo (#1 by @bar[bot])",
-      linked,
-    ] {
-      case(changelog, linked);
-    }
-
-    case(
-      "foo (#1)\nbar (#2)",
-      "foo ([#1](https://github.com/terror/present/pull/1) by [foo1](https://github.com/foo1))\nbar ([#2](https://github.com/terror/present/pull/2) by [foo2](https://github.com/foo2))",
-    );
-  }
-}

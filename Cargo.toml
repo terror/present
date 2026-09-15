@@ -20,7 +20,7 @@ console = "0.16.1"
 pulldown-cmark = { version = "0.13.0", default-features = false, features = ["simd"] }
 ropey = "1.6.1"
 similar = "2.7.0"
-snafu = { version = "0.8.9", default-features = false, features = ["std"] }
+snafu = { version = "0.9.2", default-features = false, features = ["std"] }
 termimad = "0.34.0"
 walkdir = "2.5.0"
 

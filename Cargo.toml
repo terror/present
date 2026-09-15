@@ -21,7 +21,7 @@ pulldown-cmark = { version = "0.13.0", default-features = false, features = ["si
 ropey = "1.6.1"
 similar = "2.7.0"
 snafu = { version = "0.9.2", default-features = false, features = ["std"] }
-termimad = "0.34.0"
+termimad = "0.35.4"
 walkdir = "2.5.0"
 
 [dev-dependencies]

@@ -34,8 +34,8 @@ impl Diff {
   /// function.
   pub fn print(&self, content: &Rope) {
     for change in TextDiff::from_lines(
-      &content.to_string(),
-      &content.simulate(self.clone()).to_string(),
+      content.to_string(),
+      content.simulate(self.clone()).to_string(),
     )
     .iter_all_changes()
     {
